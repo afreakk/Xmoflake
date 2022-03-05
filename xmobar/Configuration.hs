@@ -102,23 +102,23 @@ hddTmp hddName = hddName ++" <free>/<size> <usedbar> |"
 
 alsaLol = "<action=`setSinkVolumeDefault.sh +1db` button=4><action=`setSinkVolumeDefault.sh -1db` button=5>%alsa:default:Master%</action></action>"
 
-hanstopCmds cnf = [xmonadlog, alsa cnf, dynnetwork cnf, battery cnf, memory cnf, multicpu cnf, multicoretemp cnf, date]
+hanstopCmds cnf = [xmonadlog, alsa cnf, battery cnf, memory cnf, multicpu cnf, multicoretemp cnf, date]
 hanstopTmpl :: [Char]
 hanstopTmpl =
   "%UnsafeXMonadLog%}\
-  \{" ++ alsaLol ++ " | ﯱ %dynnetwork% | %battery% | \xf85a %memory% | \xfb19 %multicpu% %multicoretemp% | %date%"
+  \{" ++ alsaLol ++ " | %battery% | \xf85a %memory% | \xfb19 %multicpu% %multicoretemp% | %date%"
 
-nimbusCmds cnf = [xmonadlog, btcprice, ethprice, nimbusDisku ,alsa cnf, dynnetwork cnf, battery cnf, memory cnf, nvidiaTemp, multicpu cnf, coretemp, date, trayerPadding]
+nimbusCmds cnf = [xmonadlog, btcprice, ethprice, nimbusDisku ,alsa cnf,  battery cnf, memory cnf, nvidiaTemp, multicpu cnf, coretemp, date, trayerPadding]
 nimbusTpl :: [Char]
 nimbusTpl =
   "%UnsafeXMonadLog%}\
-  \{" ++ alsaLol ++ " | %disku% ETH %ethprice% | BTC %btcprice% | ﯱ %dynnetwork% | %battery% | \xf85a %memory% | \xf7e8 %nvidiaTemp%°C | \xfb19 %multicpu% %coretemp%| %date% %trayerPadding%"
+  \{" ++ alsaLol ++ " | %disku% ETH %ethprice% | BTC %btcprice% | \xf85a %memory% | \xf7e8 %nvidiaTemp%°C | \xfb19 %multicpu% %coretemp% | %battery% | %date% %trayerPadding%"
 
-stationaryCmds cnf = [xmonadlog, hogwartsDisku, ethprice, btcprice, enzv, alsa cnf, dynnetwork cnf, nvidiaTemp, memory cnf, multicpu cnf, multicoretemp cnf, date]
+stationaryCmds cnf = [xmonadlog, hogwartsDisku, ethprice, btcprice, enzv, alsa cnf, nvidiaTemp, memory cnf, multicpu cnf, multicoretemp cnf, date]
 stationaryTmpl :: [Char]
 stationaryTmpl = 
   "%UnsafeXMonadLog%}\
-  \{%disku% ETH %ethprice% | BTC %btcprice% | %ENZV% | " ++ alsaLol ++ " | ﯱ %dynnetwork% | \xf7e8 %nvidiaTemp%°C | \xf85a %memory% | \xfb19 %multicpu% %multicoretemp% | <action=`~/bin/runner.sh` button=1>%date%</action>"
+  \{%disku% ETH %ethprice% | BTC %btcprice% | %ENZV% | " ++ alsaLol ++ " | \xf7e8 %nvidiaTemp%°C | \xf85a %memory% | \xfb19 %multicpu% %multicoretemp% | <action=`~/bin/runner.sh` button=1>%date%</action>"
 
 config :: AConfig -> Config
 config cnf =

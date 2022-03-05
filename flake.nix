@@ -8,26 +8,22 @@
       nixpkgsFor = forAllSystems (system: import nixpkgs {
         inherit system;
         overlays = [
-          (self: super:
-            {
-              haskellPackages = super.haskellPackages.override (old: {
-                overrides = self.lib.composeExtensions (old.overrides or (_: _: { }))
-                  (
-                    hself: hsuper: {
-                      xmonad = hsuper.xmonad_0_17_0;
-                      xmonad-contrib = hsuper.xmonad-contrib_0_17_0;
-                      xmonad-extras = hsuper.xmonad-extras_0_17_0;
-                    }
-                  );
-              });
-            })
-
           self.overlay
         ];
       });
     in
     {
       overlay = (final: prev: {
+        haskellPackages = prev.haskellPackages.override (old: {
+          overrides = final.lib.composeExtensions (old.overrides or (_: _: { }))
+            (
+              hfinal: hprev: {
+                xmonad = hprev.xmonad_0_17_0;
+                xmonad-contrib = hprev.xmonad-contrib_0_17_0;
+                xmonad-extras = hprev.xmonad-extras_0_17_0;
+              }
+            );
+        });
         xmoflake = final.haskellPackages.callCabal2nix "xmoflake" (final.nix-gitignore.gitignoreSource [ ".git/" "*.nix" ] ./.) { };
       });
       packages = forAllSystems (system: {

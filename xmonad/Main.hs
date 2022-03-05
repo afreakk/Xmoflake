@@ -366,7 +366,7 @@ myManageHook = composeAll
                         -- }
 
 mySB :: AConfig -> SB.StatusBarConfig
-mySB cfg = SB.statusBarProp "~/.local/bin/xmobar-flake" (workspaceNamesPP def
+mySB cfg = SB.statusBarProp "xmobar" (workspaceNamesPP def
     { SBPP.ppCurrent = fgXmobarColor (cl_lilly cfg) . formatWs
     , SBPP.ppHidden  = formatWs
     , SBPP.ppTitle   = fgXmobarColor (cl_lilly cfg)
