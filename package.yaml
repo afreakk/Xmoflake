@@ -1,0 +1,45 @@
+dependencies:
+  - base == 4.*
+  - haskell-say
+library:
+  source-dirs: shared
+  dependencies:
+    - hostname
+    - simple-cmd
+executables:
+  xmonad-flake:
+    main: Main.hs
+    source-dirs:
+    - xmonad
+    - shared
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -O2
+    dependencies:
+    - hostname
+    - simple-cmd
+    - containers
+    - X11
+    - xmonad
+    - xmonad-contrib
+    - utf8-string
+    - directory
+    - filepath
+    - unix
+
+  xmobar-flake:
+    main: Main.hs
+    source-dirs:
+    - xmobar
+    - shared
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -O2
+    dependencies:
+    - hostname
+    - simple-cmd
+    - xmobar
