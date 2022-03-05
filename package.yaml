@@ -1,11 +1,7 @@
 dependencies:
   - base == 4.*
-  - haskell-say
-library:
-  source-dirs: shared
-  dependencies:
-    - hostname
-    - simple-cmd
+  - hostname
+  - simple-cmd
 executables:
   xmonad:
     main: Main.hs
@@ -18,8 +14,6 @@ executables:
     - -with-rtsopts=-N
     - -O2
     dependencies:
-    - hostname
-    - simple-cmd
     - containers
     - X11
     - xmonad
@@ -40,6 +34,4 @@ executables:
     - -with-rtsopts=-N
     - -O2
     dependencies:
-    - hostname
-    - simple-cmd
     - xmobar

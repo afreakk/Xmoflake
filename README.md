@@ -3,7 +3,7 @@ add in ur flake like:
 ```
 { nixpkgs.overlays = [ xmoflake.overlay ]; }
 ```
-`xmonad` launches `xmobar` from `$PATH` so add it to home/system packages.
+`xmonad` launches `xmobar` from `$PATH` so add it to home/system packages.  
 Can for instance be used like this in home-manager:
 ```
 xsession.windowManager.command = "systemd-cat --identifier=xmonad ${pkgs.xmoflake}/bin/xmonad";
