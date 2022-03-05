@@ -3,6 +3,7 @@ add in ur flake like:
 ```
 { nixpkgs.overlays = [ xmoflake.overlay ]; }
 ```
+`xmonad` launches `xmobar` from `$PATH` so add it to home/system packages.
 Can for instance be used like this in home-manager:
 ```
 xsession.windowManager.command = "systemd-cat --identifier=xmonad ${pkgs.xmoflake}/bin/xmonad";
@@ -22,3 +23,4 @@ home.file.xmonadBuildScript = {
     ln -s -f -T "$XmoflakeDir/result/bin/xmonad" "$1"
   '';
 ```
+Then in-place-recompilation will work for xmonad. (but not xmobar yet)
