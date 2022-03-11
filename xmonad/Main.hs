@@ -92,7 +92,7 @@ myXPConfig cfg = def
 myCmds :: AConfig -> XConfig Layout -> [(String, X ())]
 myCmds cfg conf =
     [ ("default-layout"      , setLayout $ XM.layoutHook conf)
-    , ("recompile"           , spawn "xmonad-afreak --recompile; xmonad-afreak --restart;")
+    , ("recompile"           , spawn "xmonad --recompile; xmonad --restart;")
     , ("kill"                , kill1)
     , ("refresh"             , refresh)
     , ("quit-wm"             , io exitSuccess)
@@ -108,6 +108,8 @@ myCmds cfg conf =
     , ("setactivesink"       , spawn "~/bin/setActiveSink")
     , ("manPrompt"           , manPrompt (myXPConfig cfg))
     , ("optype"              , gsActionRunner (optypeCmds cfg) cfg)
+    , ("lock"                , spawn "xscreensaver-command -lock")
+    , ("hibernate"           , spawn "systemctl hibernate")
     ]
 
 optypeCmds :: AConfig -> [([Char], X ())]
