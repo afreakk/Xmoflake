@@ -23,4 +23,21 @@ home.file.xmonadBuildScript = {
     ln -s -f -T "$XmoflakeDir/result/bin/xmonad" "$1"
   '';
 ```
-Then in-place-recompilation will work for xmonad. (but not xmobar yet)
+Then in-place-recompilation will work for xmonad. (but not xmobar yet)  
+And to have nixos launch the `xsession.windowManager.command` we have defined, you can add this in nixos-config:
+```
+  services.xserver = {
+    #from https://discourse.nixos.org/t/opening-i3-from-home-manager-automatically/4849/8
+    windowManager.session = [{
+      name = "home-manager";
+      start = ''
+        ${pkgs.runtimeShell} $HOME/.xsession &
+        waitPID=$!
+      '';
+    }];
+    displayManager.lightdm.enable = true;
+    enable = true;
+    layout = "us";
+  };
+```
+If there is a less hacky way of launching home-manager's `windowManager.command`, please tell me :)
