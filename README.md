@@ -14,7 +14,7 @@ home.file.xmonadBuildScript = {
   text = ''
     #!/usr/bin/env bash
     set -e
-
+    # CHANGE THIS TO MATCH THE ACTUAL LOCATION OF XMOFLAKE REPO !!
     XmoflakeDir="$HOME/coding/Xmoflake"
 
     cd "$XmoflakeDir"
