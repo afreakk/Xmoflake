@@ -18,9 +18,9 @@
           overrides = final.lib.composeExtensions (old.overrides or (_: _: { }))
             (
               hfinal: hprev: {
-                xmonad = hprev.xmonad_0_17_0;
-                xmonad-contrib = hprev.xmonad-contrib_0_17_0;
-                xmonad-extras = hprev.xmonad-extras_0_17_0;
+                xmonad = hprev.xmonad;
+                xmonad-contrib = hprev.xmonad-contrib;
+                xmonad-extras = hprev.xmonad-extras;
               }
             );
         });
