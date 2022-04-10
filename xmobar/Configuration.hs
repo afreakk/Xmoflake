@@ -108,11 +108,11 @@ hanstopTmpl =
   "%UnsafeXMonadLog%}\
   \{" ++ alsaLol ++ " | %battery% | \xf85a %memory% | \xfb19 %multicpu% %multicoretemp% | %date%"
 
-nimbusCmds cnf = [xmonadlog, btcprice, ethprice, nimbusDisku ,alsa cnf,  battery cnf, memory cnf, nvidiaTemp, multicpu cnf, coretemp, date, trayerPadding]
+nimbusCmds cnf = [xmonadlog, btcprice, ethprice, enzv, nimbusDisku ,alsa cnf,  battery cnf, memory cnf, nvidiaTemp, multicpu cnf, coretemp, date, trayerPadding]
 nimbusTpl :: [Char]
 nimbusTpl =
   "%UnsafeXMonadLog%}\
-  \{" ++ alsaLol ++ " | %disku% ETH %ethprice% | BTC %btcprice% | \xf85a %memory% | \xf7e8 %nvidiaTemp%°C | \xfb19 %multicpu% %coretemp% | %battery% | %date% %trayerPadding%"
+  \{" ++ alsaLol ++ " | %ENZV% | %disku% ETH %ethprice% | BTC %btcprice% | \xf85a %memory% | \xf7e8 %nvidiaTemp%°C | \xfb19 %multicpu% %coretemp% | %battery% | %date% %trayerPadding%"
 
 stationaryCmds cnf = [xmonadlog, hogwartsDisku, ethprice, btcprice, enzv, alsa cnf, nvidiaTemp, memory cnf, multicpu cnf, multicoretemp cnf, date]
 stationaryTmpl :: [Char]
@@ -123,6 +123,7 @@ stationaryTmpl =
 config :: AConfig -> Config
 config cnf =
   Config { verbose = False
+         , textOutput = False
          , wmClass = "xmobar"
          , wmName = "xmobar"
          , border = NoBorder

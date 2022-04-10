@@ -23,7 +23,7 @@ home.file.xmonadBuildScript = {
     ln -s -f -T "$XmoflakeDir/result/bin/xmonad" "$1"
   '';
 ```
-Then in-place-recompilation will work for xmonad. (but not xmobar yet)  
+Then in-place-recompilation will work for xmonad and xmobar!  
 And to have nixos launch the `xsession.windowManager.command` we have defined, you can add this in nixos-config:
 ```
   services.xserver = {

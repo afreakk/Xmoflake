@@ -1,6 +1,6 @@
 {
   description = "Xmonad & Xmobar built with flake";
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+  inputs.nixpkgs.url = github:nixos/nixpkgs/nixos-unstable;
   outputs = { self, nixpkgs }:
     let
       supportedSystems = [ "x86_64-linux" ];

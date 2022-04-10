@@ -1,6 +1,8 @@
 {-# OPTIONS_GHC -Wno-missing-signatures #-}
 import AConfig (getConfig, AConfig (..), HstNm (HstNm), hstNmCond)
 import System.Exit
+import qualified System.Environment as SE
+import qualified System.FilePath as SF
 import XMonad as XM
 import XMonad.Actions.CopyWindow
 import XMonad.Actions.CycleWS
@@ -39,7 +41,7 @@ import Utils (floatingTermClass, alacrittyFloatingOpt)
 import XMonad.Layout.LayoutModifier
 import qualified XMonad.Util.Run as XUR
 import qualified XMonad.Actions.EasyMotion as EM
-import XMonad.Hooks.TaffybarPagerHints (pagerHints)
+-- import XMonad.Hooks.TaffybarPagerHints (pagerHints)
 
 newtype ModeName
  = ModeName {getModeName :: Maybe String}
@@ -367,8 +369,8 @@ myManageHook = composeAll
                         -- , layoutHook      = screenCornerLayoutHook $ layoutHook c
                         -- }
 
-mySB :: AConfig -> SB.StatusBarConfig
-mySB cfg = SB.statusBarProp "xmobar" (workspaceNamesPP def
+mySB :: FilePath -> AConfig -> SB.StatusBarConfig
+mySB xmobarExePath cfg = (SB.statusBarProp xmobarExePath (workspaceNamesPP def
     { SBPP.ppCurrent = fgXmobarColor (cl_lilly cfg) . formatWs
     , SBPP.ppHidden  = formatWs
     , SBPP.ppTitle   = fgXmobarColor (cl_lilly cfg)
@@ -378,7 +380,7 @@ mySB cfg = SB.statusBarProp "xmobar" (workspaceNamesPP def
     , SBPP.ppSep     = " | "
     , SBPP.ppVisible = fgXmobarColor (cl_green cfg)
     , SBPP.ppExtras = [FN.willFloatAllNewPP (fgXmobarColor (cl_red cfg) . ("FloatNext: " ++)), fmap (fgXmobarColor (cl_aqua cfg)) . getModeName <$> (XS.get :: X ModeName)]
-    })
+    })) { SB.sbCleanupHook = SB.killAllStatusBars, SB.sbStartupHook = SB.killAllStatusBars >> SB.spawnStatusBar xmobarExePath }
   where
     fgXmobarColor color = SBPP.xmobarColor color ""
     toOrdr (wsNames:_layoutName:windowTitle:xtras:_) = [scrollableWsNames wsNames,xtras,windowTitle]
@@ -394,10 +396,11 @@ mySB cfg = SB.statusBarProp "xmobar" (workspaceNamesPP def
 
 main :: IO ()
 main = do
-  -- xmobarproc <- spawnPipe "~/.local/bin/xmobar-afreak"
+  xmonadExePath <- SE.getExecutablePath
+  let xmobarExePath = SF.replaceFileName xmonadExePath "xmobar"
   cfg <- getConfig
   xmonad . 
-      SB.withSB (mySB cfg) . 
+      SB.withSB (mySB xmobarExePath cfg) . 
       workspaceNamesEwmh .
       EWMH.ewmhFullscreen .
       EWMH.ewmh .
