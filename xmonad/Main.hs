@@ -370,18 +370,22 @@ myManageHook = composeAll
                         -- }
 
 mySB :: FilePath -> AConfig -> SB.StatusBarConfig
-mySB xmobarExePath cfg = (SB.statusBarProp xmobarExePath (workspaceNamesPP def
-    { SBPP.ppCurrent = fgXmobarColor (cl_lilly cfg) . formatWs
-    , SBPP.ppHidden  = formatWs
-    , SBPP.ppTitle   = fgXmobarColor (cl_lilly cfg)
-    , SBPP.ppTitleSanitize = Prelude.filter (`elem` xmobarTitleAllowedChars) . SBPP.xmobarStrip
-    , SBPP.ppUrgent  = fgXmobarColor (cl_aqua  cfg) . formatWs
-    , SBPP.ppOrder   = toOrdr
-    , SBPP.ppSep     = " | "
-    , SBPP.ppVisible = fgXmobarColor (cl_green cfg)
-    , SBPP.ppExtras = [FN.willFloatAllNewPP (fgXmobarColor (cl_red cfg) . ("FloatNext: " ++)), fmap (fgXmobarColor (cl_aqua cfg)) . getModeName <$> (XS.get :: X ModeName)]
-    })) { SB.sbCleanupHook = SB.killAllStatusBars, SB.sbStartupHook = SB.killAllStatusBars >> SB.spawnStatusBar xmobarExePath }
+mySB xmobarExePath cfg = (SB.statusBarProp xmobarExePath pp)
+    { SB.sbCleanupHook = SB.killAllStatusBars
+    , SB.sbStartupHook = SB.killAllStatusBars >> SB.spawnStatusBar xmobarExePath
+    }
   where
+    pp = workspaceNamesPP def
+            { SBPP.ppCurrent = fgXmobarColor (cl_lilly cfg) . formatWs
+            , SBPP.ppHidden  = formatWs
+            , SBPP.ppTitle   = fgXmobarColor (cl_lilly cfg)
+            , SBPP.ppTitleSanitize = Prelude.filter (`elem` xmobarTitleAllowedChars) . SBPP.xmobarStrip
+            , SBPP.ppUrgent  = fgXmobarColor (cl_aqua  cfg) . formatWs
+            , SBPP.ppOrder   = toOrdr
+            , SBPP.ppSep     = " | "
+            , SBPP.ppVisible = fgXmobarColor (cl_green cfg)
+            , SBPP.ppExtras = [FN.willFloatAllNewPP (fgXmobarColor (cl_red cfg) . ("FloatNext: " ++)), fmap (fgXmobarColor (cl_aqua cfg)) . getModeName <$> (XS.get :: X ModeName)]
+            }
     fgXmobarColor color = SBPP.xmobarColor color ""
     toOrdr (wsNames:_layoutName:windowTitle:xtras:_) = [scrollableWsNames wsNames,xtras,windowTitle]
     toOrdr (wsNames:_layoutName:windowTitle:_) = [scrollableWsNames wsNames,windowTitle]
@@ -396,8 +400,7 @@ mySB xmobarExePath cfg = (SB.statusBarProp xmobarExePath (workspaceNamesPP def
 
 main :: IO ()
 main = do
-  xmonadExePath <- SE.getExecutablePath
-  let xmobarExePath = SF.replaceFileName xmonadExePath "xmobar"
+  xmobarExePath <- flip SF.replaceFileName "xmobar" <$> SE.getExecutablePath
   cfg <- getConfig
   xmonad . 
       SB.withSB (mySB xmobarExePath cfg) . 
