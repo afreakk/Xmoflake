@@ -5,7 +5,11 @@ add in ur flake like:
 ```
 Can for instance be used like this in home-manager:
 ```
-xsession.windowManager.command = "systemd-cat --identifier=xmonad ${pkgs.xmoflake}/bin/xmonad";
+xsession = {
+    enable = true;
+    windowManager.command = "systemd-cat --identifier=xmonad ${pkgs.xmoflake}/bin/xmonad";
+};
+
 home.file.xmonadBuildScript = {
   target = ".xmonad/build";
   executable = true;
