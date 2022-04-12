@@ -69,7 +69,7 @@ scratchpads =
     , NS "authy"   "authy"     (className =? "Authy Desktop") (customFloating $ W.RationalRect 0.25 0.01 0.5 0.4)
     ] where
         wmName = stringProperty "WM_NAME"
-        namedVim = "namedVim.sh todo ~/todo/todo.txt"
+        namedVim = "namedVim.sh todo ~/syncthing/Documents/todo.txt"
 
 -- Prompt theme
 myXPConfig :: AConfig -> XPConfig
