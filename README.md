@@ -1,5 +1,5 @@
 # XmoFlake
-add in ur flake like:
+add in ur nixos-config like:
 ```
 { nixpkgs.overlays = [ xmoflake.overlay ]; }
 ```
