@@ -14,16 +14,16 @@
     in
     {
       overlay = (final: prev: {
-        haskellPackages = prev.haskellPackages.override (old: {
-          overrides = final.lib.composeExtensions (old.overrides or (_: _: { }))
-            (
-              hfinal: hprev: {
-                xmonad = hprev.xmonad;
-                xmonad-contrib = hprev.xmonad-contrib;
-                xmonad-extras = hprev.xmonad-extras;
-              }
-            );
-        });
+        # haskellPackages = prev.haskellPackages.override (old: {
+        #   overrides = final.lib.composeExtensions (old.overrides or (_: _: { }))
+        #     (
+        #       hfinal: hprev: {
+        #         xmonad = hprev.xmonad;
+        #         xmonad-contrib = hprev.xmonad-contrib;
+        #         xmonad-extras = hprev.xmonad-extras;
+        #       }
+        #     );
+        # });
         xmoflake = final.haskellPackages.callCabal2nix "xmoflake" (final.nix-gitignore.gitignoreSource [ ".git/" "*.nix" ] ./.) { };
       });
       packages = forAllSystems (system: {
