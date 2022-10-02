@@ -1,5 +1,10 @@
 # XmoFlake
-add in ur nixos-config like:
+add input:
+```
+inputs.xmoflake.url = path:Xmoflake; # recommend cloning repo, and using path, so you can more easily change stuff
+```
+(If xmoflake is a git repo, you need to use flag submodules=1 like so `sudo nixos-rebuild switch --flake '.?submodules=1#'`)  
+add in ur nixos-config like:  
 ```
 { nixpkgs.overlays = [ xmoflake.overlay ]; }
 ```
