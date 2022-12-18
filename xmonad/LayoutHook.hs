@@ -9,7 +9,7 @@ import XMonad.Layout.WindowNavigation
 import XMonad.Hooks.ManageDocks as MD
 import XMonad.Layout
 import AConfig (AConfig (..))
-import BooleanLayout
+-- import BooleanLayout
 import XMonad.Layout.BoringWindows as BRNG
 import XMonad.Layout.ResizableTile
 import XMonad.Layout.Spacing

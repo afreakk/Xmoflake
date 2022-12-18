@@ -35,7 +35,8 @@ import qualified XMonad.Hooks.EwmhDesktops as EWMH
 import ExtraKeyCodes
 import GridSelects ({- gsWithWindows, -} gsWindowGoto, gsActionRunner)
 import LayoutHook (myLayout)
-import NamedScratchpadRefocusLast
+import XMonad.Util.NamedScratchpad (NamedScratchpad(..), namedScratchpadManageHook, namedScratchpadAction, customFloating)
+-- import NamedScratchpadRefocusLast
 import PassFork
 import Utils (floatingTermClass, alacrittyFloatingOpt)
 import XMonad.Layout.LayoutModifier
