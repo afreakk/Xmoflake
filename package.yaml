@@ -1,3 +1,4 @@
+name: XmoFlake
 dependencies:
     - base == 4.*
     - hostname

@@ -75,7 +75,6 @@ myXPConfig cfg =
       sorter = fuzzySort
     }
 
-
 myCmds :: AConfig -> XConfig Layout -> [(String, X ())]
 myCmds cfg conf =
   [ ("default-layout", setLayout $ XM.layoutHook conf),
@@ -424,7 +423,7 @@ defaults cfg =
     { terminal = "alacritty",
       focusFollowsMouse = False,
       clickJustFocuses = False,
-      borderWidth = 5,
+      borderWidth = 4,
       modMask = mod4Mask,
       XM.workspaces = workspaceNames,
       normalBorderColor = cl_bg cfg,

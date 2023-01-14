@@ -1,47 +1,49 @@
 {
-  description = "Xmonad & Xmobar built with flake";
-  inputs.nixpkgs.url = github:nixos/nixpkgs/nixos-unstable;
-  outputs = { self, nixpkgs }:
-    let
-      supportedSystems = [ "x86_64-linux" ];
-      forAllSystems = f: nixpkgs.lib.genAttrs supportedSystems (system: f system);
-      nixpkgsFor = forAllSystems (system: import nixpkgs {
-        inherit system;
-        overlays = [
-          self.overlay
-        ];
-      });
-    in
-    {
-      overlay = (final: prev: {
-        # haskellPackages = prev.haskellPackages.override (old: {
-        #   overrides = final.lib.composeExtensions (old.overrides or (_: _: { }))
-        #     (
-        #       hfinal: hprev: {
-        #         xmonad = hprev.xmonad;
-        #         xmonad-contrib = hprev.xmonad-contrib;
-        #         xmonad-extras = hprev.xmonad-extras;
-        #       }
-        #     );
-        # });
-        xmoflake = final.haskellPackages.callCabal2nix "xmoflake" (final.nix-gitignore.gitignoreSource [ ".git/" "*.nix" ] ./.) { };
-      });
-      packages = forAllSystems (system: {
-        xmoflake = nixpkgsFor.${system}.xmoflake;
-      });
-      defaultPackage = forAllSystems (system: self.packages.${system}.xmoflake);
-      checks = self.packages;
-      devShell = forAllSystems (system:
-        let haskellPackages = nixpkgsFor.${system}.haskellPackages;
+  inputs = {
+    nixpkgs.url = "github:nixos/nixpkgs";
+    flake-utils.url = "github:numtide/flake-utils";
+  };
+
+  outputs = { self, nixpkgs, flake-utils }:
+    flake-utils.lib.eachDefaultSystem
+      (system:
+        let
+          pkgs = nixpkgs.legacyPackages.${system};
+          hl = pkgs.haskell.lib.compose;
+          haskellPackages = pkgs.haskellPackages;
+          trv = nixpkgs.lib.trivial;
+          project = extraModifiers: returnShellEnv:
+            haskellPackages.developPackage {
+              root = nixpkgs.lib.sourceFilesBySuffices ./. [ ".yaml" ".hs" ];
+              name = "XmoFlake";
+              returnShellEnv = returnShellEnv;
+              modifier =
+                (trv.flip trv.pipe) ([
+                  hl.enableStaticLibraries
+                  hl.justStaticExecutables
+                  hl.disableExecutableProfiling
+                ] ++ extraModifiers);
+            };
         in
-        haskellPackages.shellFor {
-          packages = p: [ self.packages.${system}.xmoflake ];
-          withHoogle = true;
-          buildInputs = with haskellPackages; [
-            haskell-language-server
-            ghcid
-            cabal-install
-          ];
-        });
+        {
+          packages.default = project [ ] false;
+          devShell = project
+            [
+              (hl.addBuildTools (with haskellPackages; [
+                haskell-language-server
+                hlint
+              ]))
+              (hl.overrideCabal (old: {
+                shellHook = (old.shellHook or "") + ''
+                  echo "Generating .cabal file from package.yaml using hpack, remember to regenerate if you change package.yaml! Although nix build dont care about it, its mostly for helping haskell-language-server." | ${pkgs.cowsay}/bin/cowsay
+                  hpack
+                '';
+              }))
+            ]
+            true;
+        }) // {
+      overlay = final: prev: {
+        xmoflake = self.packages.${final.system}.default;
+      };
     };
 }

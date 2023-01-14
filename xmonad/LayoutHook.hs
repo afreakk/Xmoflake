@@ -54,9 +54,9 @@ myLayout cfg = gaps $ smartBorders $ MD.avoidStruts $ BRNG.boringWindows $ wrapp
 
     -- The default number of windows in the master pane
     nmaster = 1
-    -- Default proportion of screen occupied by master pane
-    ratio   = toRational ((2/(1 + sqrt 5 :: Double)) + fromIntegral (cl_barHeight cfg) / 2160)
+    -- Default proportion of screen occupied by master pane (magic number at the end is so terminal lines align better with monitor at home)
+    ratio   = toRational ((2/(1 + sqrt 5 :: Double)) + fromIntegral (cl_barHeight cfg) / 2160) + 0.02937
     -- Percent of screen to increment by when resizing panes
-    delta   = 3/100
+    delta   = 25/1000
     subTabbedBottom tabcfg parentLayout = addTabsBottom shrinkText tabcfg $ subLayout [] Simplest parentLayout
     -- isHogwarts = cl_hostName cfg == "hogwarts"
