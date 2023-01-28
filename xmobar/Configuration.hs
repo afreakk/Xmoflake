@@ -199,7 +199,7 @@ hddTmp hddName = hddName ++ " <free>/<size> <usedbar> "
 
 alsaLol = "<action=`setSinkVolumeDefault.sh +1db` button=4><action=`setSinkVolumeDefault.sh -1db` button=5>%alsa:default:Master%</action></action> "
 
-hanstopCmds cnf = [xmonadLog, alsa cnf, battery cnf, memory cnf, multicpu cnf, multicoretemp cnf, date]
+hanstopCmds cnf = [xmonadLog, alsa cnf, battery cnf, memory cnf, multicpu cnf, multicoretemp cnf, date, trayerPadding]
 
 hanstopTmpl :: [String]
 hanstopTmpl =
@@ -207,7 +207,7 @@ hanstopTmpl =
     " %battery% ",
     " \xf85a %memory% ",
     " \xfb19 %multicpu% %multicoretemp% ",
-    " %date%"
+    " %date% %trayerPadding%"
   ]
 
 nimbusCmds cnf = [xmonadLog, btcPrice, ethprice, enzv, nimbusDiskUsg, alsa cnf, battery cnf, memory cnf, nvidiaTemp, multicpu cnf, coretemp, date, trayerPadding]
