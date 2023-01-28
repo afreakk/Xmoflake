@@ -370,11 +370,11 @@ mySB xmobarExePath cfg =
         def
           { SBPP.ppCurrent = fgXmobarColor (cl_accent cfg) . formatWs,
             SBPP.ppHidden = formatWs,
-            SBPP.ppTitle = fgXmobarColor (cl_accent cfg),
+            SBPP.ppTitle = fgXmobarColor (cl_fg cfg),
             SBPP.ppTitleSanitize = Prelude.filter (`elem` xmobarTitleAllowedChars) . SBPP.xmobarStrip . SBPP.shorten (cl_windowTitleLength cfg),
             SBPP.ppUrgent = fgXmobarColor (cl_alert cfg) . formatWs,
             SBPP.ppOrder = toOrdr,
-            SBPP.ppSep = " | ",
+            SBPP.ppSep = fgXmobarColor (cl_accent cfg) " | ",
             SBPP.ppVisible = fgXmobarColor (cl_finecolor cfg), -- only relevant when > 1 screen
             SBPP.ppExtras = [FN.willFloatAllNewPP (fgXmobarColor (cl_alert cfg) . ("FloatNext: " ++)), MDL.logMode]
           }

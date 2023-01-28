@@ -3,6 +3,7 @@
 module Configuration (config) where
 
 import AConfig (AConfig (..), HstNm (..), hstNmCond)
+import qualified Data.List
 import Xmobar hiding (date)
 
 dynNetwork cnf =
@@ -194,39 +195,45 @@ cryptoPrice :: [Char] -> [Char]
 cryptoPrice pair = "curl 'https://api.coinbase.com/v2/prices/" ++ pair ++ "/spot?currency=USD' -s | jq '.data.amount' -r"
 
 hddTmp :: [Char] -> [Char]
-hddTmp hddName = hddName ++ " <free>/<size> <usedbar> |"
+hddTmp hddName = hddName ++ " <free>/<size> <usedbar> "
 
-alsaLol = "<action=`setSinkVolumeDefault.sh +1db` button=4><action=`setSinkVolumeDefault.sh -1db` button=5>%alsa:default:Master%</action></action>"
+alsaLol = "<action=`setSinkVolumeDefault.sh +1db` button=4><action=`setSinkVolumeDefault.sh -1db` button=5>%alsa:default:Master%</action></action> "
 
 hanstopCmds cnf = [xmonadLog, alsa cnf, battery cnf, memory cnf, multicpu cnf, multicoretemp cnf, date]
 
-hanstopTmpl :: [Char]
+hanstopTmpl :: [String]
 hanstopTmpl =
-  "%UnsafeXMonadLog%}\
-  \{"
-    ++ alsaLol
-    ++ " | %battery% | \xf85a %memory% | \xfb19 %multicpu% %multicoretemp% | %date%"
+  [ "%UnsafeXMonadLog%}{" ++ alsaLol,
+    " %battery% ",
+    " \xf85a %memory% ",
+    " \xfb19 %multicpu% %multicoretemp% ",
+    " %date%"
+  ]
 
 nimbusCmds cnf = [xmonadLog, btcPrice, ethprice, enzv, nimbusDiskUsg, alsa cnf, battery cnf, memory cnf, nvidiaTemp, multicpu cnf, coretemp, date, trayerPadding]
 
-nimbusTpl :: [Char]
+nimbusTpl :: [String]
 nimbusTpl =
-  "%UnsafeXMonadLog%}\
-  \{"
-    ++ alsaLol
-    ++ " | %ENZV% | %disku% ETH %ethprice% | BTC %btcPrice% | \xf85a %memory% | \xf7e8 %nvidiaTemp%°C | \xfb19 %multicpu% %coretemp% | %battery% | %date% %trayerPadding%"
+  [ "%UnsafeXMonadLog%}{" ++ alsaLol,
+    " %ENZV% ",
+    " %disku% ",
+    " ETH %ethprice% ",
+    " BTC %btcPrice% ",
+    " \xf85a %memory% ",
+    " \xf7e8 %nvidiaTemp%°C ",
+    " \xfb19 %multicpu% %coretemp% ",
+    " %battery% ",
+    " %date% %trayerPadding%"
+  ]
 
-nimbusTplCompact :: [Char]
+nimbusTplCompact :: [String]
 nimbusTplCompact =
-  "%UnsafeXMonadLog%}\
-  \{"
-    ++ alsaLol
-    ++ " | %battery% | %date% %trayerPadding%"
+  ["%UnsafeXMonadLog%}{" ++ alsaLol, " %battery% ", " %date% %trayerPadding%"]
 
 stationaryCmds cnf = [xmonadLog, hogwartsDiskUsg, ethprice, btcPrice, enzv, alsa cnf, nvidiaTemp, memory cnf, multicpu cnf, multicoretemp cnf, date]
 
-stationaryTmpl :: [Char]
-stationaryTmpl =
+hogwartsTpl :: [Char]
+hogwartsTpl =
   "%UnsafeXMonadLog%}\
   \{%disku% ETH %ethprice% | BTC %btcPrice% | %ENZV% | "
     ++ alsaLol
@@ -234,52 +241,53 @@ stationaryTmpl =
 
 config :: AConfig -> Config
 config cnf =
-  Xmobar.defaultConfig
-    { verbose = False,
-      textOutput = False,
-      wmClass = "xmobar",
-      wmName = "xmobar",
-      border = NoBorder,
-      borderColor = cl_accent cnf,
-      borderWidth = 1,
-      textOffsets = [],
-      -- font = cl_font cnf,
-      font = cl_font_pango cnf,
-      -- additionalFonts = [],
-      bgColor = cl_bg cnf,
-      fgColor = cl_fg cnf,
-      alpha = 200,
-      signal = SignalChan Nothing,
-      dpi = fromIntegral (cl_dpi cnf),
-      -- , position = Top
-      position = TopSize L 100 (cl_barHeight cnf),
-      textOffset = -1,
-      iconOffset = -1,
-      lowerOnStart = True,
-      pickBroadest = False,
-      persistent = False,
-      hideOnStart = False,
-      iconRoot = "",
-      allDesktops = True,
-      overrideRedirect = True,
-      commands =
-        hstNmCond
-          cnf
-          HstNm
-            { hst_hogwarts = stationaryCmds cnf,
-              hst_hanstop = hanstopCmds cnf,
-              hst_nimbus2k = nimbusCmds cnf,
-              hst_other = nimbusCmds cnf
-            },
-      sepChar = "%",
-      alignSep = "}{",
-      template =
-        hstNmCond
-          cnf
-          HstNm
-            { hst_hogwarts = stationaryTmpl,
-              hst_hanstop = hanstopTmpl,
-              hst_nimbus2k = if cl_compact cnf then nimbusTplCompact else nimbusTpl,
-              hst_other = if cl_compact cnf then nimbusTplCompact else nimbusTpl
-            }
-    }
+  let nizSep = Data.List.intercalate ("<fc=" ++ cl_accent cnf ++ ">|</fc>")
+   in Xmobar.defaultConfig
+        { verbose = False,
+          textOutput = False,
+          wmClass = "xmobar",
+          wmName = "xmobar",
+          border = NoBorder,
+          -- borderColor = cl_accent cnf,
+          -- borderWidth = 1,
+          textOffsets = [],
+          -- font = cl_font cnf,
+          font = cl_font_pango cnf,
+          -- additionalFonts = [],
+          bgColor = cl_bg cnf,
+          fgColor = cl_fg cnf,
+          alpha = 160,
+          signal = SignalChan Nothing,
+          dpi = fromIntegral (cl_dpi cnf),
+          -- , position = Top
+          position = TopSize L 100 (cl_barHeight cnf),
+          textOffset = -1,
+          iconOffset = -1,
+          lowerOnStart = True,
+          pickBroadest = False,
+          persistent = False,
+          hideOnStart = False,
+          iconRoot = "",
+          allDesktops = True,
+          overrideRedirect = True,
+          commands =
+            hstNmCond
+              cnf
+              HstNm
+                { hst_hogwarts = stationaryCmds cnf,
+                  hst_hanstop = hanstopCmds cnf,
+                  hst_nimbus2k = nimbusCmds cnf,
+                  hst_other = nimbusCmds cnf
+                },
+          sepChar = "%",
+          alignSep = "}{",
+          template =
+            hstNmCond
+              cnf
+              HstNm
+                { hst_hogwarts = hogwartsTpl,
+                  hst_hanstop = nizSep hanstopTmpl,
+                  hst_nimbus2k = nizSep (if cl_compact cnf then nimbusTplCompact else nimbusTpl),
+                  hst_other = nizSep (if cl_compact cnf then nimbusTplCompact else nimbusTpl)
+                }
+        }
