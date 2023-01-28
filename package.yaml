@@ -2,7 +2,10 @@ name: XmoFlake
 dependencies:
     - base == 4.*
     - hostname
-    - simple-cmd
+    # - simple-cmd
+    - aeson
+    - directory
+    - filepath
 executables:
     xmonad:
         main: Main.hs
@@ -17,8 +20,6 @@ executables:
             - xmonad
             - xmonad-contrib
             - utf8-string
-            - directory
-            - filepath
             - unix
 
     xmobar:

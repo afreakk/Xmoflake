@@ -17,13 +17,13 @@ import XMonad.Layout.Spacing
 myTabConfig :: AConfig -> XMonad.Layout.Tabbed.Theme
 myTabConfig cfg = def
   { activeTextColor = cl_bg cfg 
-  , inactiveTextColor = cl_lilly cfg 
-  , activeColor = cl_lilly cfg 
-  , activeBorderColor = cl_lilly cfg 
+  , inactiveTextColor = cl_accent cfg 
+  , activeColor = cl_accent cfg 
+  , activeBorderColor = cl_accent cfg 
   , inactiveColor = cl_bg cfg 
-  , inactiveBorderColor = cl_lilly cfg 
-  , urgentColor = cl_aqua cfg 
-  , urgentBorderColor = cl_lilly cfg 
+  , inactiveBorderColor = cl_accent cfg 
+  , urgentColor = cl_alert cfg 
+  , urgentBorderColor = cl_accent cfg 
   , fontName = cl_font cfg
   , decoHeight = fromIntegral $ cl_tabHeight cfg
   }

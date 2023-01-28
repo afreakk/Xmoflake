@@ -60,10 +60,10 @@ myXPConfig cfg =
   def
     { font = cl_font cfg,
       bgColor = cl_bg cfg,
-      fgColor = cl_fg0 cfg,
+      fgColor = cl_fg cfg,
       bgHLight = cl_bg cfg,
-      fgHLight = cl_lilly cfg,
-      borderColor = cl_lilly cfg,
+      fgHLight = cl_accent cfg,
+      borderColor = cl_accent cfg,
       promptBorderWidth = 1,
       height = fromIntegral $ cl_xpHeight cfg,
       position = Bottom,
@@ -150,8 +150,8 @@ selectWindow cfg =
     def
       { EM.sKeys = EM.AnyKeys [xK_r, xK_s, xK_t, xK_n, xK_e, xK_i],
         EM.bgCol = cl_bg cfg,
-        EM.borderCol = cl_orange cfg,
-        EM.txtCol = cl_fg0 cfg,
+        EM.borderCol = cl_accent cfg,
+        EM.txtCol = cl_fg cfg,
         EM.emFont = cl_font_very_big cfg
       }
     >>= (`whenJust` windows . W.focusWindow)
@@ -368,15 +368,15 @@ mySB xmobarExePath cfg =
     pp =
       workspaceNamesPP
         def
-          { SBPP.ppCurrent = fgXmobarColor (cl_lilly cfg) . formatWs,
+          { SBPP.ppCurrent = fgXmobarColor (cl_accent cfg) . formatWs,
             SBPP.ppHidden = formatWs,
-            SBPP.ppTitle = fgXmobarColor (cl_lilly cfg),
-            SBPP.ppTitleSanitize = Prelude.filter (`elem` xmobarTitleAllowedChars) . SBPP.xmobarStrip,
-            SBPP.ppUrgent = fgXmobarColor (cl_aqua cfg) . formatWs,
+            SBPP.ppTitle = fgXmobarColor (cl_accent cfg),
+            SBPP.ppTitleSanitize = Prelude.filter (`elem` xmobarTitleAllowedChars) . SBPP.xmobarStrip . SBPP.shorten (cl_windowTitleLength cfg),
+            SBPP.ppUrgent = fgXmobarColor (cl_alert cfg) . formatWs,
             SBPP.ppOrder = toOrdr,
             SBPP.ppSep = " | ",
-            SBPP.ppVisible = fgXmobarColor (cl_green cfg),
-            SBPP.ppExtras = [FN.willFloatAllNewPP (fgXmobarColor (cl_red cfg) . ("FloatNext: " ++)), MDL.logMode]
+            SBPP.ppVisible = fgXmobarColor (cl_finecolor cfg), -- only relevant when > 1 screen
+            SBPP.ppExtras = [FN.willFloatAllNewPP (fgXmobarColor (cl_alert cfg) . ("FloatNext: " ++)), MDL.logMode]
           }
     fgXmobarColor color = SBPP.xmobarColor color ""
     toOrdr (wsNames : _layoutName : windowTitle : xtras : _) = [scrollableWsNames wsNames, xtras, windowTitle]
@@ -427,7 +427,7 @@ defaults cfg =
       modMask = mod4Mask,
       XM.workspaces = workspaceNames,
       normalBorderColor = cl_bg cfg,
-      focusedBorderColor = cl_orange cfg,
+      focusedBorderColor = cl_accent cfg,
       keys = myKeys cfg,
       mouseBindings = myMouseBindings,
       layoutHook = myLayout cfg,

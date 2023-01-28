@@ -13,9 +13,9 @@ dynNetwork cnf =
         "-H",
         "32000",
         "--normal",
-        cl_fg0 cnf,
+        cl_fg cnf,
         "--high",
-        cl_red cnf,
+        cl_alert cnf,
         "-t",
         "<rxvbar> <txvbar>"
       ]
@@ -29,11 +29,11 @@ multicpu cnf =
         "--minwidth",
         "2",
         "--low",
-        cl_aqua cnf,
+        cl_finecolor cnf,
         "--normal",
-        cl_fg0 cnf,
+        cl_fg cnf,
         "--high",
-        cl_red cnf,
+        cl_alert cnf,
         "-t",
         "<total>%"
       ]
@@ -43,9 +43,9 @@ memory cnf =
   Run $
     Memory
       [ "--normal",
-        cl_fg0 cnf,
+        cl_fg cnf,
         "--high",
-        cl_red cnf,
+        cl_alert cnf,
         "--minwidth",
         "2",
         "-m",
@@ -67,11 +67,11 @@ alsa cnf =
       "default"
       "Master"
       [ "--low",
-        cl_fg0 cnf,
+        cl_fg cnf,
         "--normal",
-        cl_fg0 cnf,
+        cl_fg cnf,
         "--high",
-        cl_red cnf,
+        cl_alert cnf,
         "-H",
         "100",
         "-t",
@@ -90,9 +90,9 @@ alsa cnf =
         "--on",
         "",
         "--onc",
-        cl_fg0 cnf,
+        cl_fg cnf,
         "--offc",
-        cl_red cnf
+        cl_alert cnf
       ]
 
 multicoretemp cnf =
@@ -105,11 +105,11 @@ multicoretemp cnf =
         "--minwidth",
         "2",
         "--low",
-        cl_aqua cnf,
+        cl_finecolor cnf,
         "--normal",
-        cl_fg0 cnf,
+        cl_fg cnf,
         "--high",
-        cl_red cnf,
+        cl_alert cnf,
         "-t",
         "<avg>°C"
       ]
@@ -162,13 +162,13 @@ battery cnf =
         "-H",
         "-10",
         "-l",
-        cl_fg0 cnf,
+        cl_fg cnf,
         "-m",
-        cl_aqua cnf,
+        cl_finecolor cnf,
         "-h",
-        cl_red cnf,
+        cl_alert cnf,
         "-p",
-        cl_green cnf,
+        cl_finecolor cnf,
         "-a",
         "notify-send -u critical 'Battery running out!!'",
         "-A",
@@ -216,6 +216,13 @@ nimbusTpl =
     ++ alsaLol
     ++ " | %ENZV% | %disku% ETH %ethprice% | BTC %btcPrice% | \xf85a %memory% | \xf7e8 %nvidiaTemp%°C | \xfb19 %multicpu% %coretemp% | %battery% | %date% %trayerPadding%"
 
+nimbusTplCompact :: [Char]
+nimbusTplCompact =
+  "%UnsafeXMonadLog%}\
+  \{"
+    ++ alsaLol
+    ++ " | %battery% | %date% %trayerPadding%"
+
 stationaryCmds cnf = [xmonadLog, hogwartsDiskUsg, ethprice, btcPrice, enzv, alsa cnf, nvidiaTemp, memory cnf, multicpu cnf, multicoretemp cnf, date]
 
 stationaryTmpl :: [Char]
@@ -233,14 +240,14 @@ config cnf =
       wmClass = "xmobar",
       wmName = "xmobar",
       border = NoBorder,
-      borderColor = cl_orange cnf,
+      borderColor = cl_accent cnf,
       borderWidth = 1,
       textOffsets = [],
       -- font = cl_font cnf,
       font = cl_font_pango cnf,
       -- additionalFonts = [],
       bgColor = cl_bg cnf,
-      fgColor = cl_fg0 cnf,
+      fgColor = cl_fg cnf,
       alpha = 200,
       signal = SignalChan Nothing,
       dpi = fromIntegral (cl_dpi cnf),
@@ -272,7 +279,7 @@ config cnf =
           HstNm
             { hst_hogwarts = stationaryTmpl,
               hst_hanstop = hanstopTmpl,
-              hst_nimbus2k = nimbusTpl,
-              hst_other = nimbusTpl
+              hst_nimbus2k = if cl_compact cnf then nimbusTplCompact else nimbusTpl,
+              hst_other = if cl_compact cnf then nimbusTplCompact else nimbusTpl
             }
     }
