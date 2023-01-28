@@ -91,15 +91,15 @@ getConfig = do
   -- let dpiLine = headWithDefault $ filter (isInfixOf "Xft.dpi:") lined
   -- let dpiStr = sndOfThing (words dpiLine)
   -- let dpi = readMaybe dpiStr :: Maybe Integer
-  let dpi = Just 100
+  -- let dpi = Just 100
   homeDir <- getHomeDirectory
   jsonConfig <- decodeFileStrict (combine homeDir ".config/xmoflake.json") :: IO (Maybe AConfig)
   -- fallback to hardcoded config if json can't decode / doesn't exist.
-  let cfg = fromMaybe (_getConfig hostName dpi) jsonConfig
+  let cfg = fromMaybe (_getConfig hostName) jsonConfig
   -- encodeFile "/home/afreak/xmonad.json" cfg
   return cfg
   where
-    _getConfig hostName dpi =
+    _getConfig hostName =
       AConfig
         { cl_bg = ifIsLightTheme "#fbf1c7" "#282828",
           cl_alert = "#cc241d",
@@ -118,7 +118,7 @@ getConfig = do
           cl_gsCellWidthBig = 500,
           cl_gsCellHeight = 50,
           cl_gsCellHeightBig = 80,
-          cl_dpi = fromMaybe 200 dpi,
+          cl_dpi = 100,
           cl_windowTitleLength = 75,
           cl_compact = False
         }
