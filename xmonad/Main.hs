@@ -95,7 +95,8 @@ myCmds cfg conf =
     ("manPrompt", manPrompt (myXPConfig cfg)),
     ("optype", gsActionRunner (optypeCmds cfg) cfg),
     ("lock", spawn "xscreensaver-command -lock"),
-    ("hibernate", spawn "systemctl hibernate")
+    ("hibernate", spawn "systemctl hibernate"),
+    ("toggle-struts", sendMessage MD.ToggleStruts)
   ]
 
 optypeCmds :: AConfig -> [([Char], X ())]
@@ -227,7 +228,7 @@ myKeys cfg conf@XConfig {XM.modMask = modm} =
       ((modm, xK_x), withFocused $ windows . W.sink),
       ((modm, xK_c), gsActionRunner (myCmds cfg conf) cfg),
       ((modm, xK_v), MDL.setMode manipulateSubLayoutLabel),
-      ((modm, xK_b), sendMessage MD.ToggleStruts),
+      ((modm, xK_b), spawn "dunstctl close"),
       ((modm, xK_j), spawn "~/bin/setxkbscript"),
       ((modm, xK_y), spawn "~/bin/terminal.sh"),
       ((modm .|. shiftMask, xK_y), FN.toggleFloatAllNew >> FN.runLogHook),
