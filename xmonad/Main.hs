@@ -380,7 +380,7 @@ mySB xmobarExePath cfg =
             SBPP.ppExtras = [FN.willFloatAllNewPP (fgXmobarColor (cl_alert cfg) . ("FloatNext: " ++)), MDL.logMode]
           }
     fgXmobarColor color = SBPP.xmobarColor color ""
-    toOrdr (wsNames : _layoutName : windowTitle : xtras : _) = [scrollableWsNames wsNames, xtras, windowTitle]
+    toOrdr (wsNames : _layoutName : windowTitle : extras : _) = [scrollableWsNames wsNames, extras, windowTitle]
     toOrdr (wsNames : _layoutName : windowTitle : _) = [scrollableWsNames wsNames, windowTitle]
     toOrdr _ = ["wtf something weird"]
     xmobarTitleAllowedChars = [' ' .. '~']
@@ -433,8 +433,7 @@ defaults cfg =
       mouseBindings = myMouseBindings,
       layoutHook = myLayout cfg,
       manageHook = myManageHook,
-      handleEventHook = Hacks.trayerAboveXmobarEventHook,
-      -- handleEventHook    = myEventHook,
+      handleEventHook = Hacks.trayerAboveXmobarEventHook <> Hacks.trayerPaddingXmobarEventHook,
       logHook = workspaceHistoryHook
       -- startupHook        = myStartupHook cfg
     }

@@ -177,7 +177,7 @@ battery cnf =
       ]
       50
 
-trayerPadding = Run $ Com "/bin/sh" ["-c", "yes ' ' | tr -d '\\n' | head -c $((`xdotool search --onlyvisible --class 'Trayer' getwindowgeometry| sed -n 's/^\\s*Geometry: \\([0-9]\\+\\)x.*$/\\1/p'`/12))"] "trayerPadding" 50
+trayerPadding = Run $ NamedXPropertyLog "_XMONAD_TRAYPAD" "trayerPadding"
 
 nvidiaTemp = Run $ Com "nvidia-settings" ["-t", "-q", "[gpu:0]/GPUCoreTemp"] "nvidiaTemp" 50
 
