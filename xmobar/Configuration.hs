@@ -81,13 +81,13 @@ alsa cnf =
         "2",
         "--",
         "--highs",
-        "墳",
+        "\xf057e",
         "--mediums",
-        "奔",
+        "\xf0580",
         "--lows",
-        "奄",
+        "\xf057f",
         "--off",
-        "婢",
+        "\xf026",
         "--on",
         "",
         "--onc",
@@ -112,7 +112,7 @@ multicoretemp cnf =
         "--high",
         cl_alert cnf,
         "-t",
-        "<avg>°C"
+        "<max>°C <maxpc>%"
       ]
       50
 
@@ -153,11 +153,11 @@ battery cnf =
         "3",
         "--",
         "--on-icon-pattern",
-        "\xf58e<left>% <timeleft> <watts>",
+        "\xf0084<left>% <timeleft> <watts>",
         "--off-icon-pattern",
-        "\xf58b<left>% <timeleft> <watts>",
+        "\xf008c<left>% <timeleft> <watts>",
         "--idle-icon-pattern",
-        "\xf578",
+        "\xf0079",
         "-L",
         "-20",
         "-H",
@@ -189,10 +189,10 @@ hogwartsDiskUsg = Run $ DiskU [("/mnt/fastdisk", hddTmp "fastdisk"), ("/", hddTm
 
 coretemp = Run $ CoreTemp ["-t", "<core0>|<core1>C", "-L", "40", "-H", "60", "-l", "lightblue", "-n", "gray90", "-h", "red"] 50
 
-nimbusDiskUsg = Run $ DiskU [("/", hddTmp "root"), ("/boot", hddTmp "boot")] ["-L", "20", "-H", "50", "-m", "1", "-p", "3", "-f", "▰", "-b", "▱", "-W", "6"] 100
+nimbusDiskUsg = Run $ DiskU [("/", hddTmp "\xf10b5"), ("/boot", hddTmp "\xf10ea")] ["-L", "20", "-H", "50", "-m", "1", "-p", "3", "-f", "▰", "-b", "▱", "-W", "6"] 100
 
 cryptoPrice :: [Char] -> [Char]
-cryptoPrice pair = "curl 'https://api.coinbase.com/v2/prices/" ++ pair ++ "/spot?currency=USD' -s | jq '.data.amount' -r"
+cryptoPrice pair = "curl 'https://api.coinbase.com/v2/prices/" ++ pair ++ "/spot?currency=USD' -s | jq '.data.amount' -r | cut -d . -f 1"
 
 hddTmp :: [Char] -> [Char]
 hddTmp hddName = hddName ++ " <free>/<size> <usedbar> "
@@ -217,11 +217,11 @@ nimbusTpl =
   [ "%UnsafeXMonadLog%}{" ++ alsaLol,
     " %ENZV% ",
     " %disku% ",
-    " ETH %ethprice% ",
-    " BTC %btcPrice% ",
-    " \xf85a %memory% ",
-    " \xf7e8 %nvidiaTemp%°C ",
-    " \xfb19 %multicpu% %coretemp% ",
+    " \xf086a %ethprice% ",
+    " \xf0813 %btcPrice% ",
+    " \xf035b %memory% ",
+    " \xf108 %nvidiaTemp%°C ",
+    " \xe266 %multicpu% %coretemp% ",
     " %battery% ",
     " %date% %trayerPadding%"
   ]
