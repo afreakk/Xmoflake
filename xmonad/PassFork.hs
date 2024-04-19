@@ -1,35 +1,38 @@
-module PassFork (
-                            -- * Usage
-                            -- $usage
+module PassFork
+  ( -- * Usage
+    -- $usage
+    passClipUsernamePrompt,
+    passClipPasswordPrompt,
+    passClipOTPPrompt,
+    passTypeOTPPrompt,
+    passGeneratePrompt,
+    passRemovePrompt,
+    passEditPrompt,
+    passTypePasswordPrompt,
+    passAppendOTPPrompt,
+    passInsertOTPPrompt,
+    passTypeUsernamePrompt,
+    passAutofillPrompt,
+    passShowPrompt,
+  )
+where
 
-                              passClipUsernamePrompt
-                            , passClipPasswordPrompt
-                            , passClipOTPPrompt
-                            , passTypeOTPPrompt
-                            , passGeneratePrompt
-                            , passRemovePrompt
-                            , passEditPrompt
-                            , passTypePasswordPrompt
-                            , passAppendOTPPrompt
-                            , passTypeUsernamePrompt
-                            , passAutofillPrompt
-                            , passShowPrompt
-                            ) where
-
-import XMonad.Core
-import XMonad.Prompt ( XPrompt
-                     , showXPrompt
-                     , commandToComplete
-                     , nextCompletion
-                     , getNextCompletion
-                     , XPConfig
-                     , mkXPrompt
-                     , searchPredicate)
 import System.Directory (getHomeDirectory)
-import System.FilePath (takeExtension, dropExtension, combine)
+import System.FilePath (combine, dropExtension, takeExtension)
 import System.Posix.Env (getEnv)
-import XMonad.Util.Run (runProcessWithInput, runInTerm)
-import Utils (stdinToClip, alacrittyFloatingOpt)
+import Utils (alacrittyFloatingOpt, stdinToClip)
+import XMonad.Core
+import XMonad.Prompt
+  ( XPConfig,
+    XPrompt,
+    commandToComplete,
+    getNextCompletion,
+    mkXPrompt,
+    nextCompletion,
+    searchPredicate,
+    showXPrompt,
+  )
+import XMonad.Util.Run (runInTerm, runProcessWithInput)
 
 type Predicate = String -> String -> Bool
 
@@ -41,27 +44,25 @@ type PromptLabel = String
 newtype Pass = Pass PromptLabel
 
 instance XPrompt Pass where
-  showXPrompt       (Pass prompt) = prompt ++ ": "
-  commandToComplete _ c           = c
-  nextCompletion      _           = getNextCompletion
+  showXPrompt (Pass prompt) = prompt ++ ": "
+  commandToComplete _ c = c
+  nextCompletion _ = getNextCompletion
 
 -- | Default password store folder in $HOME/.password-store
---
 passwordStoreFolderDefault :: String -> String
 passwordStoreFolderDefault home = combine home ".password-store"
 
 -- | Compute the password store's location.
 -- Use the PASSWORD_STORE_DIR environment variable to set the password store.
 -- If empty, return the password store located in user's home.
---
 passwordStoreFolder :: IO String
 passwordStoreFolder =
   getEnv "PASSWORD_STORE_DIR" >>= computePasswordStoreDir
-  where computePasswordStoreDir Nothing         = fmap passwordStoreFolderDefault getHomeDirectory
-        computePasswordStoreDir (Just storeDir) = return storeDir
+  where
+    computePasswordStoreDir Nothing = fmap passwordStoreFolderDefault getHomeDirectory
+    computePasswordStoreDir (Just storeDir) = return storeDir
 
 -- | A pass prompt factory
---
 mkPassPrompt :: PromptLabel -> (String -> X ()) -> XPConfig -> X ()
 mkPassPrompt promptLabel passwordFunction xpconfig = do
   passwords <- io (passwordStoreFolder >>= getPasswords)
@@ -80,6 +81,9 @@ passTypeOTPPrompt = mkPassPrompt "Select OTP to type" typeOTP
 
 passAppendOTPPrompt :: XPConfig -> X ()
 passAppendOTPPrompt = mkPassPrompt "Select where to append OTP secret" appendOTP
+
+passInsertOTPPrompt :: XPConfig -> X ()
+passInsertOTPPrompt = mkPassPrompt "Select where to insert OTP secret" insertOTP
 
 passGeneratePrompt :: String -> XPConfig -> X ()
 passGeneratePrompt passOpts = mkPassPrompt "Generate password for" (passGenerate passOpts)
@@ -108,6 +112,9 @@ showAll passLabel = runInFishTermWithGPG_TTY $ "pass show " ++ escapedPassLabel 
 appendOTP :: String -> X ()
 appendOTP passLabel = runInFishTermWithGPG_TTY $ "pass otp append " ++ escapedPassLabel passLabel ++ " <(zbarimg (maim -q --select --hidecursor /dev/stdout | psub) --raw -q | psub)"
 
+insertOTP :: String -> X ()
+insertOTP passLabel = runInFishTermWithGPG_TTY $ "pass otp insert " ++ escapedPassLabel passLabel ++ " <(zbarimg (maim -q --select --hidecursor /dev/stdout | psub) --raw -q | psub)"
+
 clipPassword :: String -> X ()
 clipPassword passLabel = spawn $ workaroundPass ++ " show " ++ escapedPassLabel passLabel ++ " | " ++ extractPassword ++ " | " ++ stdinToClip
 
@@ -135,37 +142,49 @@ typePassword passLabel = spawn $ workaroundPass ++ " show " ++ escapedPassLabel 
 typeUsername passLabel = spawn $ workaroundPass ++ " show " ++ escapedPassLabel passLabel ++ " | " ++ extractUsername ++ " | " ++ typeWhatsInStdin
 
 autofill :: String -> X ()
-autofill passLabel = spawn $ "IFS= txt=$("++workaroundPass++" show " ++ escapedPassLabel passLabel ++ ") && echo $txt |"++extractUsername++"|"++ typeWhatsInStdin ++" && xdotool key Tab && echo $txt |"++extractPassword++"|" ++ typeWhatsInStdin
-
+autofill passLabel = spawn $ "IFS= txt=$(" ++ workaroundPass ++ " show " ++ escapedPassLabel passLabel ++ ") && echo $txt |" ++ extractUsername ++ "|" ++ typeWhatsInStdin ++ " && xdotool key Tab && echo $txt |" ++ extractPassword ++ "|" ++ typeWhatsInStdin
 
 -- | UTILS below
-
 runInFishTermWithGPG_TTY toRun = runInTerm alacrittyFloatingOpt $ "/usr/bin/env fish -c 'set -x GPG_TTY (tty);" ++ toRun ++ "'"
 
 showInVimScratchPad = "vim --cmd \"set nowrap|setlocal bt=nofile\" -"
-escapedPassLabel passLabel = "\""++ escapeQuote passLabel ++ "\""
+
+escapedPassLabel passLabel = "\"" ++ escapeQuote passLabel ++ "\""
+
 typeWhatsInStdin = "tr -d '\n'|xdotool type --clearmodifiers --file -"
+
 extractUsername = "grep -oP 'username: \\K.*'"
+
 extractPassword = "head -n1"
+
 workaroundPass = "export GPG_TTY='workaround'; pass"
 
 escapeQuote :: String -> String
 escapeQuote = concatMap escape
-  where escape :: Char -> String
-        escape '"' = ['\\', '\"']
-        escape x = return x
+  where
+    escape :: Char -> String
+    escape '"' = ['\\', '\"']
+    escape x = return x
 
 -- | Retrieve the list of passwords from the password store 'passwordStoreDir
 getPasswords :: FilePath -> IO [String]
 getPasswords passwordStoreDir = do
-  files <- runProcessWithInput "find" [
-    "-L", -- Traverse symlinks
-    passwordStoreDir,
-    "-type", "f",
-    "-name", "*.gpg",
-    "-printf", "%P\n"] []
+  files <-
+    runProcessWithInput
+      "find"
+      [ "-L", -- Traverse symlinks
+        passwordStoreDir,
+        "-type",
+        "f",
+        "-name",
+        "*.gpg",
+        "-printf",
+        "%P\n"
+      ]
+      []
   return . map removeGpgExtension $ lines files
 
 removeGpgExtension :: String -> String
-removeGpgExtension file | takeExtension file == ".gpg" = dropExtension file
-                        | otherwise                    = file
+removeGpgExtension file
+  | takeExtension file == ".gpg" = dropExtension file
+  | otherwise = file

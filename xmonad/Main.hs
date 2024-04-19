@@ -44,7 +44,7 @@ import qualified XMonad.Util.Run as XUR
 
 scratchpads :: [NamedScratchpad]
 scratchpads =
-  [ NS "spotify" "spotifywm" (className =? "Spotify") (customFloating $ W.RationalRect 0.5 0.01 0.5 0.98),
+  [ NS "spotify" "spotify" (className =? "Spotify") (customFloating $ W.RationalRect 0.5 0.01 0.5 0.98),
     NS "todo" namedVim (wmName =? "todo") (customFloating $ W.RationalRect (1 / 6) (1 / 2) (2 / 3) (1 / 3)),
     NS "kmag" "kmag" (className =? "kmag") (customFloating $ W.RationalRect 0.05 0.9 0.9 0.1),
     NS "mpv" "mpv" (className =? "mpv") (customFloating $ W.RationalRect 0.25 0.01 0.5 0.4),
@@ -120,6 +120,7 @@ passCmds cfg =
     ("ClipOTP", passClipOTPPrompt (myXPConfig cfg)),
     ("TypeOTP", passTypeOTPPrompt (myXPConfig cfg)),
     ("AppendOTP", passAppendOTPPrompt (myXPConfig cfg)),
+    ("InsertOTP", passInsertOTPPrompt (myXPConfig cfg)),
     ("GenerateNew", passGeneratePrompt "" (myXPConfig cfg)),
     ("GenerateNewNoSymbols", passGeneratePrompt "-n" (myXPConfig cfg)),
     ("GenerateExisting", passGeneratePrompt "--in-place" (myXPConfig cfg)),

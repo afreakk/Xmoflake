@@ -120,19 +120,22 @@ enzv =
   Run $
     WeatherX
       "ENZV"
-      [ ("clear", "望"),
-        ("sunny", "\xe30d"),
-        ("mostly clear", "\xe37b"),
-        ("mostly sunny", "\xe30c"),
-        ("partly sunny", "\xe302"),
-        ("fair", "\xe302"),
-        ("cloudy", "\xe33d"),
-        ("overcast", "\xe33d"),
-        ("partly cloudy", "\xe379"),
-        ("mostly cloudy", "\xe37e"),
-        ("considerable cloudiness", "\xfa8f")
+      [ ("clear", "🌣"),
+        ("sunny", "🌣"),
+        ("mostly clear", "🌤"),
+        ("mostly sunny", "🌤"),
+        ("partly sunny", "⛅"),
+        ("fair", "🌑"),
+        ("cloudy", "☁"),
+        ("overcast", "☁"),
+        ("partly cloudy", "⛅"),
+        ("mostly cloudy", "🌧"),
+        ("considerable cloudiness", "⛈"),
+        ("obscured", "🌫")
       ]
-      ["-t", "<skyConditionS> <tempC>° <windMs>m/s <windCardinal> <windAzimuth> <pressure>"]
+      -- ["-t", "<skyConditionS> <tempC>° <windKnots>kn <windCardinal> <rh>%"]
+      ["-t", "<tempC>° <windKnots>kn <windCardinal> <rh>%"]
+      -- look out the window, dont need skyConditionS etc
       600
 
 xmonadLog = Run UnsafeXMonadLog
@@ -221,7 +224,7 @@ nimbusTpl =
     " \xf0813 %btcPrice% ",
     " \xf035b %memory% ",
     " \xf108 %nvidiaTemp%°C ",
-    " \xe266 %multicpu% %coretemp% ",
+    " \xe266 %multicpu% ",
     " %battery% ",
     " %date% %trayerPadding%"
   ]
