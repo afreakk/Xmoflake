@@ -8,6 +8,7 @@ import ExtraKeyCodes
 import GridSelects (gsActionRunner, gsWindowGoto)
 import LayoutHook (myLayout)
 import PassFork
+import qualified SteamHack
 import qualified System.Environment as SE
 import System.Exit
 import qualified System.FilePath as SF
@@ -434,7 +435,7 @@ defaults cfg =
       mouseBindings = myMouseBindings,
       layoutHook = myLayout cfg,
       manageHook = myManageHook,
-      handleEventHook = Hacks.trayerAboveXmobarEventHook <> Hacks.trayerPaddingXmobarEventHook,
+      handleEventHook = SteamHack.fixSteamFlicker <+> Hacks.trayerAboveXmobarEventHook <> Hacks.trayerPaddingXmobarEventHook,
       logHook = workspaceHistoryHook
       -- startupHook        = myStartupHook cfg
     }

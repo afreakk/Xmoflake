@@ -1,20 +1,20 @@
 {
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs";
+    unstable.url = "github:nixos/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { self, nixpkgs, flake-utils }:
+  outputs = { self, unstable, flake-utils }:
     flake-utils.lib.eachDefaultSystem
       (system:
         let
-          pkgs = nixpkgs.legacyPackages.${system};
+          pkgs = unstable.legacyPackages.${system};
           hl = pkgs.haskell.lib.compose;
           haskellPackages = pkgs.haskellPackages;
-          trv = nixpkgs.lib.trivial;
+          trv = unstable.lib.trivial;
           project = extraModifiers: returnShellEnv:
             haskellPackages.developPackage {
-              root = nixpkgs.lib.sourceFilesBySuffices ./. [ ".yaml" ".hs" ];
+              root = unstable.lib.sourceFilesBySuffices ./. [ ".yaml" ".hs" ];
               name = "XmoFlake";
               returnShellEnv = returnShellEnv;
               modifier =

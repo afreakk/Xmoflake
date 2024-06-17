@@ -1,6 +1,6 @@
 name: XmoFlake
 dependencies:
-    - base == 4.*
+    - base >= 4.11
     - hostname
     # - simple-cmd
     - aeson
@@ -18,7 +18,7 @@ executables:
             - containers
             - X11
             - xmonad
-            - xmonad-contrib
+            - xmonad-contrib == 0.18.0
             - utf8-string
             - unix
 
