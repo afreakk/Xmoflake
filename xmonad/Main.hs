@@ -97,6 +97,7 @@ myCmds cfg conf =
     ("optype", gsActionRunner (optypeCmds cfg) cfg),
     ("lock", spawn "xscreensaver-command -lock"),
     ("hibernate", spawn "systemctl hibernate"),
+    ("norwegian-layout", spawn "setxkbmap no"),
     ("toggle-struts", sendMessage MD.ToggleStruts)
   ]
 
