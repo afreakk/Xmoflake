@@ -196,6 +196,8 @@ manipulateSubLayout =
         ((modm, xK_i), sendMessage $ pullGroup MD.R),
         ((0, xK_m), withFocused (sendMessage . MergeAll)),
         ((0, xK_u), withFocused (sendMessage . UnMerge)),
+        ((modm, xK_m), withFocused (sendMessage . MergeAll)),
+        ((modm, xK_u), withFocused (sendMessage . UnMerge)),
         ((0, xK_n), onGroup W.focusDown'),
         ((0, xK_e), onGroup W.focusUp')
       ]
@@ -244,6 +246,7 @@ myKeys cfg conf@XConfig {XM.modMask = modm} =
       ((modm, xK_i), sendMessage Expand),
       ((modm .|. shiftMask, xK_i), sendMessage MirrorExpand),
       ((modm, xK_o), namedScratchpadAction scratchpads "todo"),
+      ((modm .|. shiftMask, xK_o), spawn "todofi.sh"),
       ((modm, xK_semicolon), namedScratchpadAction scratchpads "spotify"),
       ((modm, xK_oslash), namedScratchpadAction scratchpads "spotify"),
       ((modm, xK_equal), namedScratchpadAction scratchpads "authy"),
@@ -265,8 +268,8 @@ myKeys cfg conf@XConfig {XM.modMask = modm} =
                ]
          ]
       ++
-      -- mod-{w,e,r}, Switch to physical/Xinerama screens 1, 2, or 3
-      -- mod-shift-{w,e,r}, Move client to screen 1, 2, or 3
+      -- mod-{l,u}, Switch to physical/Xinerama screens 1 or 2
+      -- mod-shift-{l,u}, Move client to screen 1 or 2
       [ ((m .|. modm, key), screenWorkspace sc >>= flip whenJust (windows . f))
         | (key, sc) <- zip [xK_l, xK_u] [0 ..],
           (f, m) <- [(W.view, 0), (W.shift, shiftMask)]
