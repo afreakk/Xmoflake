@@ -141,7 +141,7 @@ brightnessArg Down cfg = hstNmCond cfg (HstNm "" "5%-" "-dec 5%" "")
 brightnessArg FullDown cfg = hstNmCond cfg (HstNm "" "1" "-set 0%" "")
 
 cmdSetVolume :: String -> String
-cmdSetVolume arg = "~/bin/setSinkVolumeDefault.sh " ++ arg
+cmdSetVolume arg = "i3-volume -y -p -n -P -C -s @DEFAULT_SINK@ " ++ arg
 
 cmdMaimSelect :: String -> String
 cmdMaimSelect out = "maim --select --hidecursor --format png " ++ out
@@ -209,8 +209,12 @@ myKeys :: AConfig -> XConfig Layout -> M.Map (KeyMask, KeySym) (X ())
 myKeys cfg conf@XConfig {XM.modMask = modm} =
   M.fromList $
     [ ((modm .|. shiftMask, xK_Return), spawn $ XM.terminal conf),
-      ((0, xK_XF86AudioRaiseVolume), spawn $ cmdSetVolume "+5%"),
-      ((0, xK_XF86AudioLowerVolume), spawn $ cmdSetVolume "-5%"),
+      ((0, xK_XF86AudioRaiseVolume), spawn $ cmdSetVolume "up 1"),
+      ((0, xK_XF86AudioLowerVolume), spawn $ cmdSetVolume "down 1"),
+      ((0, 0x1008FF12), spawn $ cmdSetVolume "mute"), -- XF86XK_AudioMute
+      ((0, 0x1008FF16), spawn $ "playerctl previous"), -- XF86XK_AudioPrev
+      ((0, 0x1008FF17), spawn $ "playerctl next"), -- 0x1008FF17
+      ((0, 0x1008FF15), spawn $ "playerctl stop"), -- 0x1008FF15
       ((0, xK_XF86MonBrightnessDown), spawn $ cmdBrightness cfg Down),
       ((modm, xK_XF86MonBrightnessDown), spawn $ cmdBrightness cfg FullDown),
       ((0, xK_XF86MonBrightnessUp), spawn $ cmdBrightness cfg Up),
