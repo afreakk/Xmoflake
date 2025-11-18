@@ -213,8 +213,8 @@ myKeys cfg conf@XConfig {XM.modMask = modm} =
       ((0, xK_XF86AudioLowerVolume), spawn $ cmdSetVolume "down 1"),
       ((0, 0x1008FF12), spawn $ cmdSetVolume "mute"), -- XF86XK_AudioMute
       ((0, 0x1008FF16), spawn $ "playerctl previous"), -- XF86XK_AudioPrev
-      ((0, 0x1008FF17), spawn $ "playerctl next"), -- 0x1008FF17
-      ((0, 0x1008FF15), spawn $ "playerctl stop"), -- 0x1008FF15
+      ((0, 0x1008FF17), spawn $ "playerctl next"), -- Next
+      ((0, 0x1008ff14), spawn $ "playerctl play-pause"), -- playSlashPause.. or just play
       ((0, xK_XF86MonBrightnessDown), spawn $ cmdBrightness cfg Down),
       ((modm, xK_XF86MonBrightnessDown), spawn $ cmdBrightness cfg FullDown),
       ((0, xK_XF86MonBrightnessUp), spawn $ cmdBrightness cfg Up),
@@ -238,7 +238,7 @@ myKeys cfg conf@XConfig {XM.modMask = modm} =
       ((modm, xK_c), gsActionRunner (myCmds cfg conf) cfg),
       ((modm, xK_v), MDL.setMode manipulateSubLayoutLabel),
       ((modm, xK_b), spawn "dunstctl close"),
-      ((modm, xK_j), spawn "~/bin/setxkbscript"),
+      -- ((modm, xK_j), spawn "~/bin/setxkbscript"),
       ((modm, xK_y), spawn "~/bin/terminal.sh"),
       ((modm .|. shiftMask, xK_y), FN.toggleFloatAllNew >> FN.runLogHook),
       ((modm, xK_h), sendMessage Shrink),

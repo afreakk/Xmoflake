@@ -200,6 +200,8 @@ cryptoPrice pair = "curl 'https://api.coinbase.com/v2/prices/" ++ pair ++ "/spot
 hddTmp :: [Char] -> [Char]
 hddTmp hddName = hddName ++ " <free>/<size> <usedbar> "
 
+mpris = Run $ Mpris2 "playerctld" ["-T", "38", "-E", "…", "-M", "25", "-e", ">", "-t", "<artist>/<title>"] 10
+
 alsaLol = "<action=`i3-volume -y -p -n -P -C -s @DEFAULT_SINK@ up 1` button=4><action=`i3-volume -y -p -n -P -C -s @DEFAULT_SINK@ down 1` button=5>%alsa:default:Master%</action></action> "
 
 hanstopCmds cnf = [xmonadLog, alsa cnf, battery cnf, memory cnf, multicpu cnf, multicoretemp cnf, date, trayerPadding]
@@ -213,11 +215,12 @@ hanstopTmpl =
     " %date% %trayerPadding%"
   ]
 
-nimbusCmds cnf = [xmonadLog, btcPrice, ethprice, enzv, nimbusDiskUsg, alsa cnf, battery cnf, memory cnf, nvidiaTemp, multicpu cnf, coretemp, date, trayerPadding]
+nimbusCmds cnf = [xmonadLog, btcPrice, ethprice, enzv, nimbusDiskUsg, alsa cnf, battery cnf, memory cnf, nvidiaTemp, multicpu cnf, coretemp, date, trayerPadding, mpris]
 
 nimbusTpl :: [String]
 nimbusTpl =
   [ "%UnsafeXMonadLog%}{" ++ alsaLol,
+    " %mpris2% ",
     " %ENZV% ",
     " %disku% ",
     " \xf086a %ethprice% ",
