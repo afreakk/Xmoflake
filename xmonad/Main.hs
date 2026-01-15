@@ -1,25 +1,23 @@
 {-# OPTIONS_GHC -Wno-missing-signatures #-}
 
 import AConfig (AConfig (..), HstNm (HstNm), getConfig, hstNmCond)
-import BackAndForth (backAndForth)
 import Calculator (calculatorPrompt)
 import qualified Data.Map as M
 import ExtraKeyCodes
 import GridSelects (gsActionRunner, gsWindowGoto)
 import LayoutHook (myLayout)
 import PassFork
-import qualified SteamHack
+import XMonad.Hooks.FloatConfigureReq (fixSteamFlicker)
 import qualified System.Environment as SE
 import System.Exit
 import qualified System.FilePath as SF
 import Utils (alacrittyFloatingOpt, floatingTermClass)
 import XMonad as XM
 import XMonad.Actions.CopyWindow
-import XMonad.Actions.CycleWS
+import XMonad.Actions.CycleWS (nextWS, prevWS, toggleOrView)
 import qualified XMonad.Actions.EasyMotion as EM
 import XMonad.Actions.FloatKeys
 import XMonad.Actions.Promote
-import XMonad.Actions.Submap
 import XMonad.Actions.WorkspaceNames
 import qualified XMonad.Hooks.EwmhDesktops as EWMH
 import qualified XMonad.Hooks.FloatNext as FN
@@ -38,7 +36,6 @@ import XMonad.Prompt
 import XMonad.Prompt.FuzzyMatch
 import XMonad.Prompt.Man
 import qualified XMonad.StackSet as W
-import qualified XMonad.Util.ExtensibleState as XS
 import qualified XMonad.Util.Hacks as Hacks
 import XMonad.Util.NamedScratchpad (NamedScratchpad (..), customFloating, namedScratchpadAction, namedScratchpadManageHook)
 import qualified XMonad.Util.Run as XUR
@@ -46,14 +43,13 @@ import qualified XMonad.Util.Run as XUR
 scratchpads :: [NamedScratchpad]
 scratchpads =
   [ NS "spotify" "spotify" (className =? "Spotify") (customFloating $ W.RationalRect 0.5 0.01 0.5 0.98),
-    NS "todo" namedVim (wmName =? "todo") (customFloating $ W.RationalRect (1 / 6) (1 / 2) (2 / 3) (1 / 3)),
+    NS "todo" namedVim (className =? "todo") (customFloating $ W.RationalRect (1 / 6) (1 / 2) (2 / 3) (1 / 3)),
     NS "kmag" "kmag" (className =? "kmag") (customFloating $ W.RationalRect 0.05 0.9 0.9 0.1),
     NS "mpv" "mpv" (className =? "mpv") (customFloating $ W.RationalRect 0.25 0.01 0.5 0.4),
     NS "authy" "authy" (className =? "Authy Desktop") (customFloating $ W.RationalRect 0.25 0.01 0.5 0.4)
   ]
   where
-    wmName = stringProperty "WM_NAME"
-    namedVim = "namedVim.sh todo ~/syncthing/Documents/todo.txt"
+    namedVim = "namedVim.sh todo $HOME/syncthing/Documents/todo.txt"
 
 -- Prompt theme
 myXPConfig :: AConfig -> XPConfig
@@ -83,7 +79,6 @@ myCmds cfg conf =
     ("kill", kill1),
     ("refresh", refresh),
     ("quit-wm", io exitSuccess),
-    ("hotkeys", spawn "grep 'xK_' ~/coding/Xmonanza/xmonad/Main.hs | dmenu -l 42"),
     ("dunstctl-history-pop", spawn "dunstctl history-pop"),
     ("dunstctl-context", spawn "dunstctl context"),
     ("dunstctl-close", spawn "dunstctl close"),
@@ -97,7 +92,8 @@ myCmds cfg conf =
     ("optype", gsActionRunner (optypeCmds cfg) cfg),
     ("lock", spawn "xscreensaver-command -lock"),
     ("hibernate", spawn "systemctl hibernate"),
-    ("norwegian-layout", spawn "setxkbmap no"),
+    ("keyboard-layout: norwegian", spawn "setxkbmap no"),
+    ("keyboard-layout: us-customzz", spawn "setxkbmap -layout us-customzz"),
     ("toggle-struts", sendMessage MD.ToggleStruts)
   ]
 
@@ -149,6 +145,7 @@ cmdMaimSelect out = "maim --select --hidecursor --format png " ++ out
 cmdPipeImgToClip :: String
 cmdPipeImgToClip = " | xclip -selection clipboard -t image/png -i"
 
+selectWindow :: AConfig -> X ()
 selectWindow cfg =
   EM.selectWindow
     def
@@ -265,7 +262,7 @@ myKeys cfg conf@XConfig {XM.modMask = modm} =
       ++ [ ((m .|. modm, k), f i)
            | (i, k) <- zip workspaceNames workspaceKeys,
              (f, m) <-
-               [ (backAndForth, 0),
+               [ (toggleOrView, 0),
                  (windows . W.shift, shiftMask),
                  (swapWithCurrent, controlMask),
                  (windows . copy, mod1Mask)
@@ -338,36 +335,6 @@ myManageHook =
   where
     unfloat = ask >>= doF . W.sink
 
--- mouseHelpActions :: [(String, X ())]
--- mouseHelpActions = [
---     ("Cancel menu", return ())
---   , ("Kill"      , kill1)
---   , ("Promote"    , promote)
---   , ("Next layout", sendMessage NextLayout)
---   , ("Inc Master", sendMessage $ IncMasterN (-1))
---   , ("Dec Master", sendMessage $ IncMasterN 1)
---   , ("Expand", sendMessage Expand)
---   , ("Shrink", sendMessage Shrink)
---   , ("magnify", namedScratchpadAction scratchpads "kmag")
---   , ("copyToAll", windows copyToAll)
---   , ("killAllOtherCopies", killAllOtherCopies)
---   ]
-
-------------------------------------------------------------------------
--- Startup hook
--- Perform an arbitrary action each time xmonad starts or is restarted
--- with mod-q.  Used by, e.g., XMonad.Layout.PerWorkspace to initialize
--- per-workspace layout choices.
---
--- By default, do nothing.
--- myStartupHook :: AConfig -> X ()
--- myStartupHook = gsWithWindows mouseHelpActions
-
--- screenCornerStuff c = c
--- { handleEventHook = handleEventHook c <+> screenCornerEventHook
--- , startupHook     = addScreenCorner SCUpperRight $ startupHook c
--- , layoutHook      = screenCornerLayoutHook $ layoutHook c
--- }
 
 mySB :: FilePath -> AConfig -> SB.StatusBarConfig
 mySB xmobarExePath cfg =
@@ -382,7 +349,7 @@ mySB xmobarExePath cfg =
           { SBPP.ppCurrent = fgXmobarColor (cl_accent cfg) . formatWs,
             SBPP.ppHidden = formatWs,
             SBPP.ppTitle = fgXmobarColor (cl_fg cfg),
-            SBPP.ppTitleSanitize = Prelude.filter (`elem` xmobarTitleAllowedChars) . SBPP.xmobarStrip . SBPP.shorten (cl_windowTitleLength cfg),
+            SBPP.ppTitleSanitize = SBPP.xmobarStrip . Prelude.filter isPrintableAscii . SBPP.shorten (cl_windowTitleLength cfg),
             SBPP.ppUrgent = fgXmobarColor (cl_alert cfg) . formatWs,
             SBPP.ppOrder = toOrdr,
             SBPP.ppSep = fgXmobarColor (cl_accent cfg) " | ",
@@ -392,8 +359,8 @@ mySB xmobarExePath cfg =
     fgXmobarColor color = SBPP.xmobarColor color ""
     toOrdr (wsNames : _layoutName : windowTitle : extras : _) = [scrollableWsNames wsNames, extras, windowTitle]
     toOrdr (wsNames : _layoutName : windowTitle : _) = [scrollableWsNames wsNames, windowTitle]
-    toOrdr _ = ["wtf something weird"]
-    xmobarTitleAllowedChars = [' ' .. '~']
+    toOrdr xs = ["ppOrder: unexpected " ++ show (length xs) ++ " elements"]
+    isPrintableAscii c = c >= ' ' && c <= '~'
     scrollableWsNames :: String -> String
     scrollableWsNames wsNames = SBPP.xmobarAction "xdotool key Super_L+Shift+Tab" "5" (SBPP.xmobarAction "xdotool key Super_L+Tab" "4" wsNames)
     -- hide NSP ws rest of ws make clickable with xdotool
@@ -443,7 +410,6 @@ defaults cfg =
       mouseBindings = myMouseBindings,
       layoutHook = myLayout cfg,
       manageHook = myManageHook,
-      handleEventHook = SteamHack.fixSteamFlicker <+> Hacks.trayerAboveXmobarEventHook <> Hacks.trayerPaddingXmobarEventHook,
+      handleEventHook = fixSteamFlicker <+> Hacks.trayerAboveXmobarEventHook <> Hacks.trayerPaddingXmobarEventHook,
       logHook = workspaceHistoryHook
-      -- startupHook        = myStartupHook cfg
     }
