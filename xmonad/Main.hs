@@ -352,7 +352,7 @@ mySB xmobarExePath cfg =
             SBPP.ppTitleSanitize = SBPP.xmobarStrip . Prelude.filter isPrintableAscii . SBPP.shorten (cl_windowTitleLength cfg),
             SBPP.ppUrgent = fgXmobarColor (cl_alert cfg) . formatWs,
             SBPP.ppOrder = toOrdr,
-            SBPP.ppSep = fgXmobarColor (cl_accent cfg) " | ",
+            SBPP.ppSep = fgXmobarColor (cl_accent cfg) "  ",
             SBPP.ppVisible = fgXmobarColor (cl_finecolor cfg), -- only relevant when > 1 screen
             SBPP.ppExtras = [FN.willFloatAllNewPP (fgXmobarColor (cl_alert cfg) . ("FloatNext: " ++)), MDL.logMode]
           }

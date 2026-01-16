@@ -60,8 +60,11 @@ alsa cnf =
       [ "--low", cl_fg cnf, "--normal", cl_fg cnf, "--high", cl_alert cnf,
         "-H", "100", "-t", "<status> <volume>%", "--minwidth", "2",
         "--",
-        "--highs", "\xf057e", "--mediums", "\xf0580", "--lows", "\xf057f",
-        "--off", "\xf026", "--on", "",
+        "--highs", "<fc=" ++ cl_accent cnf ++ ">\xf057e</fc>",
+        "--mediums", "<fc=" ++ cl_accent cnf ++ ">\xf0580</fc>",
+        "--lows", "<fc=" ++ cl_accent cnf ++ ">\xf057f</fc>",
+        "--off", "<fc=" ++ cl_alert cnf ++ ">\xf026</fc>",
+        "--on", "",
         "--onc", cl_fg cnf, "--offc", cl_alert cnf
       ]
 
@@ -113,11 +116,11 @@ battery cnf =
         "3",
         "--",
         "--on-icon-pattern",
-        "\xf0084<left>% <timeleft> <watts>",
+        "<fc=" ++ cl_finecolor cnf ++ ">\xf0084</fc> <left>% <timeleft> <watts>",
         "--off-icon-pattern",
-        "\xf008c<left>% <timeleft> <watts>",
+        "<fc=" ++ cl_accent cnf ++ ">\xf008c</fc> <left>% <timeleft> <watts>",
         "--idle-icon-pattern",
-        "\xf0079",
+        "<fc=" ++ cl_finecolor cnf ++ ">\xf0079</fc>",
         "-L",
         "-20",
         "-H",
@@ -147,7 +150,7 @@ ethprice = Run $ Com "/bin/sh" ["-c", cryptoPrice "ETH-USD"] "ethprice" 600
 
 hogwartsDiskUsg = Run $ DiskU [("/mnt/fastdisk", hddTmp "fastdisk"), ("/", hddTmp "root"), ("/boot", hddTmp "boot"), ("/mnt/bigdisk", hddTmp "bigdisk")] ["-L", "20", "-H", "50", "-m", "1", "-p", "3", "-f", "▰", "-b", "▱", "-W", "6"] 100
 
-nimbusDiskUsg = Run $ DiskU [("/", hddTmp "\xf10b5"), ("/boot", hddTmp "\xf10ea")] ["-L", "20", "-H", "50", "-m", "1", "-p", "3", "-f", "▰", "-b", "▱", "-W", "6"] 100
+nimbusDiskUsg cnf = Run $ DiskU [("/", hddTmp (ic (cl_accent cnf) "\xf10b5")), ("/boot", hddTmp (ic (cl_accent cnf) "\xf10ea"))] ["-L", "20", "-H", "50", "-m", "1", "-p", "3", "-f", "▰", "-b", "▱", "-W", "6"] 100
 
 cryptoPrice :: [Char] -> [Char]
 cryptoPrice pair = "curl 'https://api.coinbase.com/v2/prices/" ++ pair ++ "/spot?currency=USD' -s | jq '.data.amount' -r | cut -d . -f 1"
@@ -170,14 +173,14 @@ hanstopTmpl cnf =
     section (cl_finecolor cnf) "\xf073" "%date%" ++ "%trayerPadding%"
   ]
 
-nimbusCmds cnf = [xmonadLog, btcPrice, ethprice, enzv, nimbusDiskUsg, alsa cnf, battery cnf, memory cnf, nvidiaTemp, multicpu cnf, multicoretemp cnf, date, trayerPadding, mpris]
+nimbusCmds cnf = [xmonadLog, btcPrice, ethprice, enzv, nimbusDiskUsg cnf, alsa cnf, battery cnf, memory cnf, nvidiaTemp, multicpu cnf, multicoretemp cnf, date, trayerPadding, mpris]
 
 nimbusTpl :: AConfig -> [String]
 nimbusTpl cnf =
   [ "%UnsafeXMonadLog%}{" ++ alsaClickable,
     section (cl_accent cnf) "\xf001" "%mpris2%",
     section (cl_accent cnf) "\xf0599" "%ENZV%",
-    section (cl_accent cnf) "\xf0a0" "%disku%",
+    " %disku%",
     section (cl_finecolor cnf) "\xf086a" "%ethprice%",
     section (cl_finecolor cnf) "\xf0813" "%btcPrice%",
     section (cl_accent cnf) "\xf035b" "%memory%",
