@@ -158,7 +158,7 @@ cryptoPrice pair = "curl 'https://api.coinbase.com/v2/prices/" ++ pair ++ "/spot
 hddTmp :: [Char] -> [Char]
 hddTmp hddName = hddName ++ " <free>/<size> <usedbar> "
 
-mpris = Run $ Mpris2 "playerctld" ["-T", "38", "-E", "…", "-M", "25", "-e", ">", "-t", "<artist>/<title>"] 10
+mpris cnf = Run $ Mpris2 "playerctld" ["-T", "38", "-E", "…", "-M", "25", "-e", ">", "-t", ic (cl_accent cnf) "\xf001" ++ " <artist>/<title>", "-x", ""] 10
 
 alsaClickable = "<action=`i3-volume -y -p -n -P -C -s @DEFAULT_SINK@ up 1` button=4><action=`i3-volume -y -p -n -P -C -s @DEFAULT_SINK@ down 1` button=5>%alsa:default:Master%</action></action> "
 
@@ -173,12 +173,12 @@ hanstopTmpl cnf =
     section (cl_finecolor cnf) "\xf073" "%date%" ++ "%trayerPadding%"
   ]
 
-nimbusCmds cnf = [xmonadLog, btcPrice, ethprice, enzv, nimbusDiskUsg cnf, alsa cnf, battery cnf, memory cnf, nvidiaTemp, multicpu cnf, multicoretemp cnf, date, trayerPadding, mpris]
+nimbusCmds cnf = [xmonadLog, btcPrice, ethprice, enzv, nimbusDiskUsg cnf, alsa cnf, battery cnf, memory cnf, nvidiaTemp, multicpu cnf, multicoretemp cnf, date, trayerPadding, mpris cnf]
 
 nimbusTpl :: AConfig -> [String]
 nimbusTpl cnf =
   [ "%UnsafeXMonadLog%}{" ++ alsaClickable,
-    section (cl_accent cnf) "\xf001" "%mpris2%",
+    " %mpris2%",
     section (cl_accent cnf) "\xf0599" "%ENZV%",
     " %disku%",
     section (cl_finecolor cnf) "\xf086a" "%ethprice%",
