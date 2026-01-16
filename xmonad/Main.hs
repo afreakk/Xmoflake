@@ -46,7 +46,8 @@ scratchpads =
     NS "todo" namedVim (className =? "todo") (customFloating $ W.RationalRect (1 / 6) (1 / 2) (2 / 3) (1 / 3)),
     NS "kmag" "kmag" (className =? "kmag") (customFloating $ W.RationalRect 0.05 0.9 0.9 0.1),
     NS "mpv" "mpv" (className =? "mpv") (customFloating $ W.RationalRect 0.25 0.01 0.5 0.4),
-    NS "authy" "authy" (className =? "Authy Desktop") (customFloating $ W.RationalRect 0.25 0.01 0.5 0.4)
+    NS "authy" "authy" (className =? "Authy Desktop") (customFloating $ W.RationalRect 0.25 0.01 0.5 0.4),
+    NS "help" "~/nixos-config/Xmoflake/xmonad/show-keybindings.sh" (className =? "XmonadHelp") (customFloating $ W.RationalRect 0.4 0.05 0.2 0.9)
   ]
   where
     namedVim = "namedVim.sh todo $HOME/syncthing/Documents/todo.txt"
@@ -256,6 +257,7 @@ myKeys cfg conf@XConfig {XM.modMask = modm} =
       ((modm, xK_m), sendMessage (IncMasterN (-1))),
       ((modm, xK_comma), sendMessage (IncMasterN 1)),
       ((modm, xK_slash), namedScratchpadAction scratchpads "mpv"),
+      ((modm, xK_F1), namedScratchpadAction scratchpads "help"),
       ((modm, xK_Tab), nextWS),
       ((modm .|. shiftMask, xK_Tab), prevWS)
     ]
@@ -268,13 +270,14 @@ myKeys cfg conf@XConfig {XM.modMask = modm} =
                  (windows . copy, mod1Mask)
                ]
          ]
-      ++
+      ++ [((modm, xK_u), focusUrgent)]
+      -- Uncomment for multi-screen setup:
       -- mod-{l,u}, Switch to physical/Xinerama screens 1 or 2
       -- mod-shift-{l,u}, Move client to screen 1 or 2
-      [ ((m .|. modm, key), screenWorkspace sc >>= flip whenJust (windows . f))
-        | (key, sc) <- zip [xK_l, xK_u] [0 ..],
-          (f, m) <- [(W.view, 0), (W.shift, shiftMask)]
-      ]
+      -- ++ [ ((m .|. modm, key), screenWorkspace sc >>= flip whenJust (windows . f))
+      --      | (key, sc) <- zip [xK_l, xK_u] [0 ..],
+      --        (f, m) <- [(W.view, 0), (W.shift, shiftMask)]
+      --    ]
 
 resetWorkspaceNames :: X ()
 resetWorkspaceNames = mapM_ (`setWorkspaceName` "") workspaceNames
