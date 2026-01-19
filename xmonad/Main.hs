@@ -331,7 +331,12 @@ myManageHook =
   composeAll
     [ className =? "qutebrowser" --> unfloat,
       className =? "TeamViewer" --> unfloat,
-      className =? floatingTermClass --> doFloat
+      className =? floatingTermClass --> doFloat,
+      className =? "Slack" --> doShift "0",
+      className =? "Element" --> doShift "0",
+      className =? "Signal" --> doShift "0",
+      className =? "Viber" --> doShift "0",
+      className =? "Weechat" --> doShift "0"
     ]
     <+> FN.floatNextHook
     <+> namedScratchpadManageHook scratchpads
