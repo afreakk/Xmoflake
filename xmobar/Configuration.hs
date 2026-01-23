@@ -162,12 +162,14 @@ mpris cnf = Run $ Mpris2 "playerctld" ["-T", "38", "-E", "…", "-M", "25", "-e"
 
 alsaClickable = "<action=`i3-volume -y -p -n -P -C -s @DEFAULT_SINK@ up 1` button=4><action=`i3-volume -y -p -n -P -C -s @DEFAULT_SINK@ down 1` button=5>%alsa:default:Master%</action></action> "
 
+batteryClickable = " <action=`~/bin/battery-menu.sh` button=1>%battery%</action> "
+
 hanstopCmds cnf = [xmonadLog, alsa cnf, battery cnf, memory cnf, multicpu cnf, multicoretemp cnf, date, trayerPadding]
 
 hanstopTmpl :: AConfig -> [String]
 hanstopTmpl cnf =
   [ "%UnsafeXMonadLog%}{" ++ alsaClickable,
-    " %battery% ",
+    batteryClickable,
     section (cl_accent cnf) "\xf035b" "%memory%",
     section (cl_accent cnf) "\xe266" "%multicpu%" ++ ic (cl_finecolor cnf) " \xf2c9 " ++ "%multicoretemp%",
     section (cl_finecolor cnf) "\xf073" "%date%" ++ "%trayerPadding%"
@@ -186,14 +188,14 @@ nimbusTpl cnf =
     section (cl_accent cnf) "\xf035b" "%memory%",
     section (cl_accent cnf) "\xf108" "%nvidiaTemp%°C",
     section (cl_accent cnf) "\xe266" "%multicpu%" ++ ic (cl_finecolor cnf) " \xf2c9 " ++ "%multicoretemp%",
-    " %battery% ",
+    batteryClickable,
     section (cl_finecolor cnf) "\xf073" "%date%" ++ "%trayerPadding%"
   ]
 
 nimbusTplCompact :: AConfig -> [String]
 nimbusTplCompact cnf =
   [ "%UnsafeXMonadLog%}{" ++ alsaClickable,
-    " %battery% ",
+    batteryClickable,
     section (cl_finecolor cnf) "\xf073" "%date%" ++ "%trayerPadding%"
   ]
 
@@ -233,7 +235,7 @@ config cnf =
           font = cl_font_pango cnf,
           bgColor = cl_bg cnf,
           fgColor = cl_fg cnf,
-          alpha = 200,
+          alpha = 255,
           signal = SignalChan Nothing,
           dpi = fromIntegral (cl_dpi cnf),
           position = TopSize L 100 (cl_barHeight cnf),
