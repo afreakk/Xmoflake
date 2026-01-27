@@ -52,21 +52,8 @@ memory cnf =
 
 date = Run $ Date "%a %d %b %H:%M" "date" 600
 
-alsa cnf =
-  Run $
-    Alsa
-      "default"
-      "Master"
-      [ "--low", cl_fg cnf, "--normal", cl_fg cnf, "--high", cl_alert cnf,
-        "-H", "100", "-t", "<status> <volume>%", "--minwidth", "2",
-        "--",
-        "--highs", "<fc=" ++ cl_accent cnf ++ ">\xf057e</fc>",
-        "--mediums", "<fc=" ++ cl_accent cnf ++ ">\xf0580</fc>",
-        "--lows", "<fc=" ++ cl_accent cnf ++ ">\xf057f</fc>",
-        "--off", "<fc=" ++ cl_alert cnf ++ ">\xf026</fc>",
-        "--on", "",
-        "--onc", cl_fg cnf, "--offc", cl_alert cnf
-      ]
+-- Event-based volume monitor via PipeReader (fed by systemd service)
+vol = Run $ PipeReader "/run/user/1000/xmobar-volume" "vol"
 
 multicoretemp cnf =
   Run $
@@ -160,26 +147,26 @@ hddTmp hddName = hddName ++ " <free>/<size> <usedbar> "
 
 mpris cnf = Run $ Mpris2 "playerctld" ["-T", "38", "-E", "…", "-M", "25", "-e", ">", "-t", ic (cl_accent cnf) "\xf001" ++ " <artist>/<title>", "-x", ""] 10
 
-alsaClickable = "<action=`i3-volume -y -p -n -P -C -s @DEFAULT_SINK@ up 1` button=4><action=`i3-volume -y -p -n -P -C -s @DEFAULT_SINK@ down 1` button=5>%alsa:default:Master%</action></action> "
+volClickable = "<action=`i3-volume -y -p -n -P -C -s @DEFAULT_SINK@ up 1` button=4><action=`i3-volume -y -p -n -P -C -s @DEFAULT_SINK@ down 1` button=5>%vol%</action></action> "
 
 batteryClickable = " <action=`~/bin/battery-menu.sh` button=1>%battery%</action> "
 
-hanstopCmds cnf = [xmonadLog, alsa cnf, battery cnf, memory cnf, multicpu cnf, multicoretemp cnf, date, trayerPadding]
+hanstopCmds cnf = [xmonadLog, vol, battery cnf, memory cnf, multicpu cnf, multicoretemp cnf, date, trayerPadding]
 
 hanstopTmpl :: AConfig -> [String]
 hanstopTmpl cnf =
-  [ "%UnsafeXMonadLog%}{" ++ alsaClickable,
+  [ "%UnsafeXMonadLog%}{" ++ volClickable,
     batteryClickable,
     section (cl_accent cnf) "\xf035b" "%memory%",
     section (cl_accent cnf) "\xe266" "%multicpu%" ++ ic (cl_finecolor cnf) " \xf2c9 " ++ "%multicoretemp%",
     section (cl_finecolor cnf) "\xf073" "%date%" ++ "%trayerPadding%"
   ]
 
-nimbusCmds cnf = [xmonadLog, btcPrice, ethprice, enzv, nimbusDiskUsg cnf, alsa cnf, battery cnf, memory cnf, nvidiaTemp, multicpu cnf, multicoretemp cnf, date, trayerPadding, mpris cnf]
+nimbusCmds cnf = [xmonadLog, btcPrice, ethprice, enzv, nimbusDiskUsg cnf, vol, battery cnf, memory cnf, nvidiaTemp, multicpu cnf, multicoretemp cnf, date, trayerPadding, mpris cnf]
 
 nimbusTpl :: AConfig -> [String]
 nimbusTpl cnf =
-  [ "%UnsafeXMonadLog%}{" ++ alsaClickable,
+  [ "%UnsafeXMonadLog%}{" ++ volClickable,
     " %mpris2%",
     section (cl_accent cnf) "\xf0599" "%ENZV%",
     " %disku%",
@@ -194,12 +181,12 @@ nimbusTpl cnf =
 
 nimbusTplCompact :: AConfig -> [String]
 nimbusTplCompact cnf =
-  [ "%UnsafeXMonadLog%}{" ++ alsaClickable,
+  [ "%UnsafeXMonadLog%}{" ++ volClickable,
     batteryClickable,
     section (cl_finecolor cnf) "\xf073" "%date%" ++ "%trayerPadding%"
   ]
 
-stationaryCmds cnf = [xmonadLog, hogwartsDiskUsg, ethprice, btcPrice, enzv, alsa cnf, nvidiaTemp, memory cnf, multicpu cnf, multicoretemp cnf, date]
+stationaryCmds cnf = [xmonadLog, hogwartsDiskUsg, ethprice, btcPrice, enzv, vol, nvidiaTemp, memory cnf, multicpu cnf, multicoretemp cnf, date]
 
 hogwartsTpl :: AConfig -> String
 hogwartsTpl cnf =
@@ -212,7 +199,7 @@ hogwartsTpl cnf =
     ++ sep cnf
     ++ section (cl_accent cnf) "\xf0599" "%ENZV%"
     ++ sep cnf
-    ++ alsaClickable
+    ++ volClickable
     ++ sep cnf
     ++ section (cl_accent cnf) "\xf108" "%nvidiaTemp%°C"
     ++ sep cnf
