@@ -43,14 +43,14 @@ import qualified XMonad.Util.Run as XUR
 scratchpads :: [NamedScratchpad]
 scratchpads =
   [ NS "spotify" "spotify" (className =? "Spotify") (customFloating $ W.RationalRect 0.5 0.01 0.5 0.98),
-    NS "todo" namedVim (className =? "todo") (customFloating $ W.RationalRect (1 / 6) (1 / 2) (2 / 3) (1 / 3)),
+    NS "todo" namedVim (className =? "todo") (customFloating $ W.RationalRect (1 / 6) (1 / 2) (2 / 5) (1 / 3)),
     NS "kmag" "kmag" (className =? "kmag") (customFloating $ W.RationalRect 0.05 0.9 0.9 0.1),
     NS "mpv" "mpv" (className =? "mpv") (customFloating $ W.RationalRect 0.25 0.01 0.5 0.4),
     NS "authy" "authy" (className =? "Authy Desktop") (customFloating $ W.RationalRect 0.25 0.01 0.5 0.4),
     NS "help" "~/nixos-config/Xmoflake/xmonad/show-keybindings.sh" (className =? "XmonadHelp") (customFloating $ W.RationalRect 0.4 0.05 0.2 0.9)
   ]
   where
-    namedVim = "namedVim.sh todo $HOME/syncthing/Documents/todo.txt"
+    namedVim = "namedTerminal.sh todo pter $HOME/syncthing/Documents/todo.txt"
 
 -- Prompt theme
 myXPConfig :: AConfig -> XPConfig
@@ -89,6 +89,7 @@ myCmds cfg conf =
     ("clip-to-feh", spawn $ cmdMaimSelect "/dev/stdout" ++ cmdPipeImgToClip ++ "&& xclip -selection clipboard -t image/png -o | feh -"),
     ("clip-to-server", spawn "clipImgToNixPiHttp"),
     ("setactivesink", spawn "~/bin/setActiveSink"),
+    ("tmuxattach", spawn "~/bin/tmuxattach.sh"),
     ("manPrompt", manPrompt (myXPConfig cfg)),
     ("optype", gsActionRunner (optypeCmds cfg) cfg),
     ("lock", spawn "xscreensaver-command -lock"),
@@ -388,7 +389,7 @@ main = do
     . EWMH.ewmhFullscreen
     . EWMH.ewmh
     . applyRefocusLastHooks
-    . withUrgencyHook NoUrgencyHook
+    . withUrgencyHookC BorderUrgencyHook { urgencyBorderColor = cl_alert cfg } urgencyConfig {suppressWhen = Focused}
     . MD.docks
     $ defaults cfg
 
@@ -409,7 +410,7 @@ defaults cfg =
     { terminal = "alacritty",
       focusFollowsMouse = False,
       clickJustFocuses = False,
-      borderWidth = 4,
+      borderWidth = 6,
       modMask = mod4Mask,
       XM.workspaces = workspaceNames,
       normalBorderColor = cl_bg cfg,
