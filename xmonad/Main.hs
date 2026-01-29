@@ -7,7 +7,6 @@ import ExtraKeyCodes
 import GridSelects (gsActionRunner, gsWindowGoto)
 import LayoutHook (myLayout)
 import PassFork
-import XMonad.Hooks.FloatConfigureReq (fixSteamFlicker)
 import qualified System.Environment as SE
 import System.Exit
 import qualified System.FilePath as SF
@@ -20,6 +19,7 @@ import XMonad.Actions.FloatKeys
 import XMonad.Actions.Promote
 import XMonad.Actions.WorkspaceNames
 import qualified XMonad.Hooks.EwmhDesktops as EWMH
+import XMonad.Hooks.FloatConfigureReq (fixSteamFlicker)
 import qualified XMonad.Hooks.FloatNext as FN
 import qualified XMonad.Hooks.ManageDocks as MD
 import qualified XMonad.Hooks.Modal as MDL
@@ -272,13 +272,14 @@ myKeys cfg conf@XConfig {XM.modMask = modm} =
                ]
          ]
       ++ [((modm, xK_u), focusUrgent)]
-      -- Uncomment for multi-screen setup:
-      -- mod-{l,u}, Switch to physical/Xinerama screens 1 or 2
-      -- mod-shift-{l,u}, Move client to screen 1 or 2
-      -- ++ [ ((m .|. modm, key), screenWorkspace sc >>= flip whenJust (windows . f))
-      --      | (key, sc) <- zip [xK_l, xK_u] [0 ..],
-      --        (f, m) <- [(W.view, 0), (W.shift, shiftMask)]
-      --    ]
+
+-- Uncomment for multi-screen setup:
+-- mod-{l,u}, Switch to physical/Xinerama screens 1 or 2
+-- mod-shift-{l,u}, Move client to screen 1 or 2
+-- ++ [ ((m .|. modm, key), screenWorkspace sc >>= flip whenJust (windows . f))
+--      | (key, sc) <- zip [xK_l, xK_u] [0 ..],
+--        (f, m) <- [(W.view, 0), (W.shift, shiftMask)]
+--    ]
 
 resetWorkspaceNames :: X ()
 resetWorkspaceNames = mapM_ (`setWorkspaceName` "") workspaceNames
@@ -344,7 +345,6 @@ myManageHook =
   where
     unfloat = ask >>= doF . W.sink
 
-
 mySB :: FilePath -> AConfig -> SB.StatusBarConfig
 mySB xmobarExePath cfg =
   (SB.statusBarProp xmobarExePath pp)
@@ -389,7 +389,7 @@ main = do
     . EWMH.ewmhFullscreen
     . EWMH.ewmh
     . applyRefocusLastHooks
-    . withUrgencyHookC BorderUrgencyHook { urgencyBorderColor = cl_alert cfg } urgencyConfig {suppressWhen = Focused}
+    . withUrgencyHookC BorderUrgencyHook {urgencyBorderColor = cl_alert cfg} urgencyConfig {suppressWhen = Focused}
     . MD.docks
     $ defaults cfg
 
@@ -410,7 +410,7 @@ defaults cfg =
     { terminal = "alacritty",
       focusFollowsMouse = False,
       clickJustFocuses = False,
-      borderWidth = 6,
+      borderWidth = 8,
       modMask = mod4Mask,
       XM.workspaces = workspaceNames,
       normalBorderColor = cl_bg cfg,
