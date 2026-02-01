@@ -149,7 +149,11 @@ mpris cnf = Run $ Mpris2 "playerctld" ["-T", "38", "-E", "…", "-M", "25", "-e"
 
 volClickable = "<action=`i3-volume -y -p -n -P -C -s @DEFAULT_SINK@ up 1` button=4><action=`i3-volume -y -p -n -P -C -s @DEFAULT_SINK@ down 1` button=5>%vol%</action></action> "
 
-batteryClickable = " <action=`~/bin/battery-menu.sh` button=1>%battery%</action> "
+batteryClickable = popupAction "battery-popup" " %battery% "
+
+-- Popup toggle action helper for QuickShell system monitoring popups
+popupAction :: String -> String -> String
+popupAction target content = "<action=`qs ipc -c system-popups call " ++ target ++ " toggle` button=1>" ++ content ++ "</action>"
 
 hanstopCmds cnf = [xmonadLog, vol, battery cnf, memory cnf, multicpu cnf, multicoretemp cnf, date, trayerPadding]
 
@@ -157,8 +161,8 @@ hanstopTmpl :: AConfig -> [String]
 hanstopTmpl cnf =
   [ "%UnsafeXMonadLog%}{" ++ volClickable,
     batteryClickable,
-    section (cl_accent cnf) "\xf035b" "%memory%",
-    section (cl_accent cnf) "\xe266" "%multicpu%" ++ ic (cl_finecolor cnf) " \xf2c9 " ++ "%multicoretemp%",
+    popupAction "memory-popup" (section (cl_accent cnf) "\xf035b" "%memory%"),
+    popupAction "cpu-popup" (section (cl_accent cnf) "\xe266" "%multicpu%" ++ ic (cl_finecolor cnf) " \xf2c9 " ++ "%multicoretemp%"),
     section (cl_finecolor cnf) "\xf073" "%date%" ++ "%trayerPadding%"
   ]
 
@@ -172,9 +176,9 @@ nimbusTpl cnf =
     " %disku%",
     section (cl_finecolor cnf) "\xf086a" "%ethprice%",
     section (cl_finecolor cnf) "\xf0813" "%btcPrice%",
-    section (cl_accent cnf) "\xf035b" "%memory%",
-    section (cl_accent cnf) "\xf108" "%nvidiaTemp%°C",
-    section (cl_accent cnf) "\xe266" "%multicpu%" ++ ic (cl_finecolor cnf) " \xf2c9 " ++ "%multicoretemp%",
+    popupAction "memory-popup" (section (cl_accent cnf) "\xf035b" "%memory%"),
+    popupAction "gpu-popup" (section (cl_accent cnf) "\xf108" "%nvidiaTemp%°C"),
+    popupAction "cpu-popup" (section (cl_accent cnf) "\xe266" "%multicpu%" ++ ic (cl_finecolor cnf) " \xf2c9 " ++ "%multicoretemp%"),
     batteryClickable,
     section (cl_finecolor cnf) "\xf073" "%date%" ++ "%trayerPadding%"
   ]
@@ -201,11 +205,11 @@ hogwartsTpl cnf =
     ++ sep cnf
     ++ volClickable
     ++ sep cnf
-    ++ section (cl_accent cnf) "\xf108" "%nvidiaTemp%°C"
+    ++ popupAction "gpu-popup" (section (cl_accent cnf) "\xf108" "%nvidiaTemp%°C")
     ++ sep cnf
-    ++ section (cl_accent cnf) "\xf035b" "%memory%"
+    ++ popupAction "memory-popup" (section (cl_accent cnf) "\xf035b" "%memory%")
     ++ sep cnf
-    ++ section (cl_accent cnf) "\xe266" "%multicpu%" ++ ic (cl_finecolor cnf) " \xf2c9 " ++ "%multicoretemp%"
+    ++ popupAction "cpu-popup" (section (cl_accent cnf) "\xe266" "%multicpu%" ++ ic (cl_finecolor cnf) " \xf2c9 " ++ "%multicoretemp%")
     ++ sep cnf
     ++ " " ++ ic (cl_finecolor cnf) "\xf073" ++ " <action=`~/bin/runner.sh` button=1>%date%</action> "
 

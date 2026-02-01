@@ -334,6 +334,7 @@ myManageHook =
     [ className =? "qutebrowser" --> unfloat,
       className =? "TeamViewer" --> unfloat,
       className =? floatingTermClass --> doFloat,
+      title =? "quickshell" --> customFloating (W.RationalRect 0.78 0.02 0.2 0.4),
       className =? "Slack" --> doShift "0",
       className =? "Element" --> doShift "0",
       className =? "Signal" --> doShift "0",
