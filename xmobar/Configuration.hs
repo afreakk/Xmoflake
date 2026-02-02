@@ -163,7 +163,7 @@ hanstopTmpl cnf =
     batteryClickable,
     popupAction "memory-popup" (section (cl_accent cnf) "\xf035b" "%memory%"),
     popupAction "cpu-popup" (section (cl_accent cnf) "\xe266" "%multicpu%" ++ ic (cl_finecolor cnf) " \xf2c9 " ++ "%multicoretemp%"),
-    section (cl_finecolor cnf) "\xf073" "%date%" ++ "%trayerPadding%"
+    popupAction "calendar-popup" (section (cl_finecolor cnf) "\xf073" "%date%") ++ "%trayerPadding%"
   ]
 
 nimbusCmds cnf = [xmonadLog, btcPrice, ethprice, enzv, nimbusDiskUsg cnf, vol, battery cnf, memory cnf, nvidiaTemp, multicpu cnf, multicoretemp cnf, date, trayerPadding, mpris cnf]
@@ -180,14 +180,14 @@ nimbusTpl cnf =
     popupAction "gpu-popup" (section (cl_accent cnf) "\xf108" "%nvidiaTemp%°C"),
     popupAction "cpu-popup" (section (cl_accent cnf) "\xe266" "%multicpu%" ++ ic (cl_finecolor cnf) " \xf2c9 " ++ "%multicoretemp%"),
     batteryClickable,
-    section (cl_finecolor cnf) "\xf073" "%date%" ++ "%trayerPadding%"
+    popupAction "calendar-popup" (section (cl_finecolor cnf) "\xf073" "%date%") ++ "%trayerPadding%"
   ]
 
 nimbusTplCompact :: AConfig -> [String]
 nimbusTplCompact cnf =
   [ "%UnsafeXMonadLog%}{" ++ volClickable,
     batteryClickable,
-    section (cl_finecolor cnf) "\xf073" "%date%" ++ "%trayerPadding%"
+    popupAction "calendar-popup" (section (cl_finecolor cnf) "\xf073" "%date%") ++ "%trayerPadding%"
   ]
 
 stationaryCmds cnf = [xmonadLog, hogwartsDiskUsg, ethprice, btcPrice, enzv, vol, nvidiaTemp, memory cnf, multicpu cnf, multicoretemp cnf, date]
@@ -211,7 +211,7 @@ hogwartsTpl cnf =
     ++ sep cnf
     ++ popupAction "cpu-popup" (section (cl_accent cnf) "\xe266" "%multicpu%" ++ ic (cl_finecolor cnf) " \xf2c9 " ++ "%multicoretemp%")
     ++ sep cnf
-    ++ " " ++ ic (cl_finecolor cnf) "\xf073" ++ " <action=`~/bin/runner.sh` button=1>%date%</action> "
+    ++ popupAction "calendar-popup" (" " ++ ic (cl_finecolor cnf) "\xf073" ++ " %date% ")
 
 config :: AConfig -> Config
 config cnf =
