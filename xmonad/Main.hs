@@ -2,7 +2,10 @@
 
 import AConfig (AConfig (..), HstNm (HstNm), getConfig, hstNmCond)
 import Calculator (calculatorPrompt)
+import Control.Monad (when)
+import Data.Maybe (fromMaybe)
 import qualified Data.Map as M
+import Data.Typeable (Typeable)
 import ExtraKeyCodes
 import GridSelects (gsActionRunner, gsWindowGoto)
 import LayoutHook (myLayout)
@@ -28,6 +31,7 @@ import qualified XMonad.Hooks.StatusBar as SB
 import qualified XMonad.Hooks.StatusBar.PP as SBPP
 import XMonad.Hooks.UrgencyHook
 import XMonad.Hooks.WorkspaceHistory (workspaceHistoryHook)
+import qualified XMonad.Util.ExtensibleState as XS
 import qualified XMonad.Layout.BoringWindows as BRNG
 import XMonad.Layout.LayoutModifier
 import XMonad.Layout.ResizableTile
@@ -51,6 +55,35 @@ scratchpads =
   ]
   where
     namedVim = "namedTerminal.sh todo pter $HOME/syncthing/Documents/todo.txt"
+
+------------------------------------------------------------------------
+-- Quickshell popup focus tracking
+-- Close popups when focus moves FROM a Quickshell popup TO another window
+
+newtype LastFocusedWindow = LastFocusedWindow (Maybe Window)
+  deriving (Typeable)
+
+instance ExtensionClass LastFocusedWindow where
+  initialValue = LastFocusedWindow Nothing
+
+isQuickshellPopup :: Window -> X Bool
+isQuickshellPopup w = do
+  name <- runQuery title w
+  return (name == "quickshell")
+
+hidePopupsOnFocusChange :: X ()
+hidePopupsOnFocusChange = do
+  currentFocus <- gets (W.peek . windowset)
+  LastFocusedWindow lastFocus <- XS.get
+  when (currentFocus /= lastFocus) $ do
+    XS.put (LastFocusedWindow currentFocus)
+    -- Only hide if PREVIOUS window was a Quickshell popup
+    case lastFocus of
+      Just prevWin -> do
+        wasQuickshell <- isQuickshellPopup prevWin
+        when wasQuickshell $
+          spawn "qs ipc -c system-popups call popups hideAll"
+      Nothing -> return ()
 
 -- Prompt theme
 myXPConfig :: AConfig -> XPConfig
@@ -339,7 +372,8 @@ myManageHook =
       className =? "Element" --> doShift "0",
       className =? "Signal" --> doShift "0",
       className =? "Viber" --> doShift "0",
-      className =? "Weechat" --> doShift "0"
+      className =? "Weechat" --> doShift "0",
+      className =? "discord" --> doShift "0"
     ]
     <+> FN.floatNextHook
     <+> namedScratchpadManageHook scratchpads
@@ -421,5 +455,5 @@ defaults cfg =
       layoutHook = myLayout cfg,
       manageHook = myManageHook,
       handleEventHook = fixSteamFlicker <+> Hacks.trayerAboveXmobarEventHook <> Hacks.trayerPaddingXmobarEventHook,
-      logHook = workspaceHistoryHook
+      logHook = workspaceHistoryHook <+> hidePopupsOnFocusChange
     }
