@@ -52,7 +52,7 @@ home.file.xmonadBuildScript = {
   '';
 ```
 
-Then in-place-recompilation will work for xmonad and xmobar!  
+Then in-place-recompilation will work for xmonad!
 To have nixos launch the `xsession.windowManager.command` we have defined, you can add this in nixos-config:
 
 ```nix

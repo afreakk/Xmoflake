@@ -3,16 +3,15 @@
 import AConfig (AConfig (..), HstNm (HstNm), getConfig, hstNmCond)
 import Calculator (calculatorPrompt)
 import Control.Monad (when)
-import Data.Maybe (fromMaybe)
+import Data.List (elemIndex, nub, sort)
 import qualified Data.Map as M
+import Data.Maybe (fromMaybe, mapMaybe)
 import Data.Typeable (Typeable)
 import ExtraKeyCodes
 import GridSelects (gsActionRunner, gsWindowGoto)
 import LayoutHook (myLayout)
 import PassFork
-import qualified System.Environment as SE
 import System.Exit
-import qualified System.FilePath as SF
 import Utils (alacrittyFloatingOpt, floatingTermClass)
 import XMonad as XM
 import XMonad.Actions.CopyWindow
@@ -27,11 +26,8 @@ import qualified XMonad.Hooks.FloatNext as FN
 import qualified XMonad.Hooks.ManageDocks as MD
 import qualified XMonad.Hooks.Modal as MDL
 import XMonad.Hooks.RefocusLast
-import qualified XMonad.Hooks.StatusBar as SB
-import qualified XMonad.Hooks.StatusBar.PP as SBPP
 import XMonad.Hooks.UrgencyHook
 import XMonad.Hooks.WorkspaceHistory (workspaceHistoryHook)
-import qualified XMonad.Util.ExtensibleState as XS
 import qualified XMonad.Layout.BoringWindows as BRNG
 import XMonad.Layout.LayoutModifier
 import XMonad.Layout.ResizableTile
@@ -40,7 +36,7 @@ import XMonad.Prompt
 import XMonad.Prompt.FuzzyMatch
 import XMonad.Prompt.Man
 import qualified XMonad.StackSet as W
-import qualified XMonad.Util.Hacks as Hacks
+import qualified XMonad.Util.ExtensibleState as XS
 import XMonad.Util.NamedScratchpad (NamedScratchpad (..), customFloating, namedScratchpadAction, namedScratchpadManageHook)
 import qualified XMonad.Util.Run as XUR
 
@@ -84,6 +80,35 @@ hidePopupsOnFocusChange = do
         when wasQuickshell $
           spawn "qs ipc -c system-popups call popups hideAll"
       Nothing -> return ()
+
+setRootCardinals :: String -> [Int] -> X ()
+setRootCardinals propName values = withDisplay $ \dpy -> do
+  atom <- getAtom propName
+  cardinal <- getAtom "CARDINAL"
+  root <- asks theRoot
+  io $ changeProperty32 dpy root atom cardinal propModeReplace (map fromIntegral values)
+
+workspaceToIndex :: WorkspaceId -> Maybe Int
+workspaceToIndex wsTag = elemIndex wsTag workspaceNames
+
+publishQuickshellWorkspaceState :: X ()
+publishQuickshellWorkspaceState = withWindowSet $ \ws -> do
+  let occupied =
+        sort
+          . nub
+          $ mapMaybe
+            (workspaceToIndex . W.tag)
+            [w | w <- W.workspaces ws, W.tag w /= "NSP", W.stack w /= Nothing]
+  setRootCardinals "_XMONAD_QUICKSHELL_OCCUPIED" occupied
+
+  urgentWins <- readUrgents
+  let urgent =
+        sort
+          . nub
+          $ mapMaybe
+            (\win -> W.findTag win ws >>= workspaceToIndex)
+            urgentWins
+  setRootCardinals "_XMONAD_QUICKSHELL_URGENT" urgent
 
 -- Prompt theme
 myXPConfig :: AConfig -> XPConfig
@@ -129,6 +154,7 @@ myCmds cfg conf =
     ("hibernate", spawn "systemctl hibernate"),
     ("keyboard-layout: norwegian", spawn "setxkbmap no"),
     ("keyboard-layout: us-customzz", spawn "setxkbmap -layout us-customzz"),
+    ("barPicker", spawn "bar-picker"),
     ("toggle-struts", sendMessage MD.ToggleStruts)
   ]
 
@@ -269,8 +295,8 @@ myKeys cfg conf@XConfig {XM.modMask = modm} =
       ((modm, xK_x), withFocused $ windows . W.sink),
       ((modm, xK_c), gsActionRunner (myCmds cfg conf) cfg),
       ((modm, xK_v), MDL.setMode manipulateSubLayoutLabel),
-      ((modm, xK_b), spawn "dunstctl close"),
-      -- ((modm, xK_j), spawn "~/bin/setxkbscript"),
+      ((modm, xK_b), spawn "dunstctl close && qs ipc -c system-popups call popups hideAll"),
+      ((modm, xK_j), spawn "~/bin/bar-picker"),
       ((modm, xK_y), spawn "~/bin/terminal.sh"),
       ((modm .|. shiftMask, xK_y), FN.toggleFloatAllNew >> FN.runLogHook),
       ((modm, xK_h), sendMessage Shrink),
@@ -380,46 +406,11 @@ myManageHook =
   where
     unfloat = ask >>= doF . W.sink
 
-mySB :: FilePath -> AConfig -> SB.StatusBarConfig
-mySB xmobarExePath cfg =
-  (SB.statusBarProp xmobarExePath pp)
-    { SB.sbCleanupHook = SB.killAllStatusBars,
-      SB.sbStartupHook = SB.killAllStatusBars >> SB.spawnStatusBar xmobarExePath
-    }
-  where
-    pp =
-      workspaceNamesPP
-        def
-          { SBPP.ppCurrent = fgXmobarColor (cl_accent cfg) . formatWs,
-            SBPP.ppHidden = formatWs,
-            SBPP.ppTitle = fgXmobarColor (cl_fg cfg),
-            SBPP.ppTitleSanitize = SBPP.xmobarStrip . Prelude.filter isPrintableAscii . SBPP.shorten (cl_windowTitleLength cfg),
-            SBPP.ppUrgent = fgXmobarColor (cl_alert cfg) . formatWs,
-            SBPP.ppOrder = toOrdr,
-            SBPP.ppSep = fgXmobarColor (cl_accent cfg) "  ",
-            SBPP.ppVisible = fgXmobarColor (cl_finecolor cfg), -- only relevant when > 1 screen
-            SBPP.ppExtras = [FN.willFloatAllNewPP (fgXmobarColor (cl_alert cfg) . ("FloatNext: " ++)), MDL.logMode]
-          }
-    fgXmobarColor color = SBPP.xmobarColor color ""
-    toOrdr (wsNames : _layoutName : windowTitle : extras : _) = [scrollableWsNames wsNames, extras, windowTitle]
-    toOrdr (wsNames : _layoutName : windowTitle : _) = [scrollableWsNames wsNames, windowTitle]
-    toOrdr xs = ["ppOrder: unexpected " ++ show (length xs) ++ " elements"]
-    isPrintableAscii c = c >= ' ' && c <= '~'
-    scrollableWsNames :: String -> String
-    scrollableWsNames wsNames = SBPP.xmobarAction "xdotool key Super_L+Shift+Tab" "5" (SBPP.xmobarAction "xdotool key Super_L+Tab" "4" wsNames)
-    -- hide NSP ws rest of ws make clickable with xdotool
-    formatWs "NSP" = ""
-    formatWs wsName = SBPP.xmobarAction ("xdotool key Super_L+" ++ wsIdx) "1" wsName
-      where
-        wsIdx = takeWhile (/= ':') $ SBPP.xmobarStrip wsName
-
 main :: IO ()
 main = do
-  xmobarExePath <- flip SF.replaceFileName "xmobar" <$> SE.getExecutablePath
   cfg <- getConfig
   xmonad
     . MDL.modal [manipulateFloat, manipulateSubLayout]
-    . SB.withSB (mySB xmobarExePath cfg)
     . workspaceNamesEwmh
     . EWMH.ewmhFullscreen
     . EWMH.ewmh
@@ -454,6 +445,7 @@ defaults cfg =
       mouseBindings = myMouseBindings,
       layoutHook = myLayout cfg,
       manageHook = myManageHook,
-      handleEventHook = fixSteamFlicker <+> Hacks.trayerAboveXmobarEventHook <> Hacks.trayerPaddingXmobarEventHook,
-      logHook = workspaceHistoryHook <+> hidePopupsOnFocusChange
+      startupHook = publishQuickshellWorkspaceState,
+      handleEventHook = fixSteamFlicker,
+      logHook = workspaceHistoryHook <+> hidePopupsOnFocusChange <+> publishQuickshellWorkspaceState
     }

@@ -6,11 +6,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```bash
 nix develop          # Enter dev shell with HLS, hlint, hpack, and all dependencies
-nix build            # Build both xmobar and xmonad executables
+nix build            # Build the xmonad executable
 hpack                # Regenerate .cabal from package.yaml (required for HLS hints)
 ```
 
-Built executables: `./result/bin/xmobar` and `./result/bin/xmonad`
+Built executable: `./result/bin/xmonad`
 
 Integration rebuild (when used as submodule in nixos-config):
 ```bash
@@ -19,27 +19,22 @@ sudo nixos-rebuild switch --flake '.?submodules=1#'
 
 ## Architecture
 
-XmoFlake is a Haskell-based XMonad window manager + Xmobar status bar configuration using Nix Flakes. Both components share configuration through a common AConfig module.
+XmoFlake is a Haskell-based XMonad window manager configuration using Nix Flakes.
 
 ### Module Structure
 
 ```
-xmonad/           # Window manager (415 LOC in Main.hs)
-├── Main.hs       # Keybindings, scratchpads, statusbar PP, window rules
+xmonad/           # Window manager
+├── Main.hs       # Keybindings, scratchpads, window rules
 ├── LayoutHook.hs # Layout definitions (ResizableTile, tabbed, spacing)
 ├── PassFork.hs   # Pass password manager integration with multiple prompts
 ├── GridSelects.hs # Grid-based action runner and window selector
 ├── Calculator.hs # Calculator prompt using `calc` command
 ├── ExtraKeyCodes.hs # XF86 multimedia key definitions
-├── XmobarUtils.hs # Xmobar string truncation
 └── Utils.hs      # Floating terminal class, clipboard utils
 
-xmobar/           # Status bar
-├── Main.hs       # Entry point - loads AConfig and runs xmobar
-└── Configuration.hs # Host-specific templates and monitor definitions
-
 shared/
-└── AConfig.hs    # Shared config: hostname detection, colors, fonts, DPI
+└── AConfig.hs    # Config: hostname detection, colors, fonts, DPI
 ```
 
 ### Host-Aware Configuration
@@ -68,19 +63,6 @@ Key AConfig fields:
 - `cl_barHeight`, `cl_tabHeight`, `cl_xpHeight`, `cl_dpi` - Display settings
 - `cl_gsCellWidth`, `cl_gsCellHeight` (and big variants) - Grid select dimensions
 
-### Xmobar Templates
-
-Each host has commands (monitors) and templates (display layout):
-- `nimbusCmds`/`nimbusTpl` - nimbus2k (compact mode aware)
-- `hanstopCmds`/`hanstopTmpl` - hanstop laptop
-- `stationaryCmds`/`hogwartsTpl` - hogwarts desktop
-
-Template helpers:
-- `section color icon content` - Section with colored icon
-- `ic color icon` - Color an icon
-- `sep cnf` - Powerline separator
-- `colorArgs cnf` / `colorArgsNoLow cnf` - Monitor threshold colors
-
 ### XMonad Key Features
 
 - 10 workspaces (1-9, 0) with persistent naming
@@ -95,9 +77,7 @@ Template helpers:
 ```
 startup → getConfig() reads ~/.config/xmoflake.json
         → Falls back to hardcoded defaults per hostname
-        → AConfig passed to both xmonad and xmobar
-              ├─ XMonad: layouts, prompts, statusbar PP
-              └─ Xmobar: templates, monitors, colors
+        → AConfig used for layouts, prompts, colors, grid selects
 ```
 
 ## External Dependencies
