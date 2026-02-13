@@ -82,4 +82,4 @@ startup → getConfig() reads ~/.config/xmoflake.json
 
 ## External Dependencies
 
-Commands used by keybindings: `calc`, `brightnessctl`/`xbacklight`, `i3-volume`, `playerctl`, `maim`, `xclip`, `pass`, `optype`, `dunstctl`, `setxkbmap`
+Commands used by keybindings: `calc`, `brightnessctl`/`xbacklight`, `i3-volume`, `playerctl`, `maim`, `xclip`, `pass`, `optype`, `qs ipc` (notifications), `setxkbmap`
