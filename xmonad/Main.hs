@@ -197,7 +197,7 @@ brightnessArg Down cfg = hstNmCond cfg (HstNm "" "5%-" "-dec 5%" "")
 brightnessArg FullDown cfg = hstNmCond cfg (HstNm "" "1" "-set 0%" "")
 
 cmdSetVolume :: String -> String
-cmdSetVolume arg = "i3-volume -y -p -n -P -C -s @DEFAULT_SINK@ " ++ arg
+cmdSetVolume arg = "i3-volume -p -n -P -C -s @DEFAULT_SINK@ " ++ arg
 
 cmdMaimSelect :: String -> String
 cmdMaimSelect out = "maim --select --hidecursor --format png " ++ out
