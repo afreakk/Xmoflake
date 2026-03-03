@@ -3,14 +3,17 @@
 import AConfig (AConfig (..), HstNm (HstNm), getConfig, hstNmCond)
 import Calculator (calculatorPrompt)
 import Control.Monad (when)
+import Data.Char (ord)
 import Data.List (elemIndex, nub, sort)
-import qualified Data.Map as M
+import qualified Data.Map.Strict as M
 import Data.Maybe (fromMaybe, mapMaybe)
 import Data.Typeable (Typeable)
+import Foreign.C.Types (CChar)
 import ExtraKeyCodes
 import GridSelects (gsActionRunner, gsWindowGoto)
 import LayoutHook (myLayout)
 import PassFork
+import SpawnWorkspaceHook (shiftToSpawnerWorkspace)
 import System.Exit
 import Utils (alacrittyFloatingOpt, floatingTermClass)
 import XMonad as XM
@@ -109,6 +112,17 @@ publishQuickshellWorkspaceState = withWindowSet $ \ws -> do
             (\win -> W.findTag win ws >>= workspaceToIndex)
             urgentWins
   setRootCardinals "_XMONAD_QUICKSHELL_URGENT" urgent
+
+publishModalMode :: X ()
+publishModalMode = do
+  mMode <- MDL.logMode
+  let modeStr = fromMaybe "" mMode
+  withDisplay $ \dpy -> do
+    atom <- getAtom "_XMONAD_MODAL_MODE"
+    utf8 <- getAtom "UTF8_STRING"
+    root <- asks theRoot
+    let bytes = map (fromIntegral . ord) modeStr :: [CChar]
+    io $ changeProperty8 dpy root atom utf8 propModeReplace bytes
 
 -- Prompt theme
 myXPConfig :: AConfig -> XPConfig
@@ -248,8 +262,8 @@ manipulateSubLayout =
   MDL.mode manipulateSubLayoutLabel $ \XConfig {modMask = modm} ->
     M.fromList
       [ ((modm, xK_h), sendMessage $ pullGroup MD.L),
-        ((modm, xK_n), sendMessage $ pullGroup MD.U),
-        ((modm, xK_e), sendMessage $ pullGroup MD.D),
+        ((modm, xK_n), sendMessage $ pullGroup MD.D),
+        ((modm, xK_e), sendMessage $ pullGroup MD.U),
         ((modm, xK_i), sendMessage $ pullGroup MD.R),
         ((0, xK_m), withFocused (sendMessage . MergeAll)),
         ((0, xK_u), withFocused (sendMessage . UnMerge)),
@@ -392,7 +406,7 @@ myManageHook =
     [ className =? "qutebrowser" --> unfloat,
       className =? "TeamViewer" --> unfloat,
       className =? floatingTermClass --> doFloat,
-      title =? "quickshell" --> customFloating (W.RationalRect 0.78 0.02 0.2 0.4),
+      title =? "quickshell" --> doIgnore,
       className =? "Slack" --> doShift "0",
       className =? "Element" --> doShift "0",
       className =? "Signal" --> doShift "0",
@@ -402,6 +416,7 @@ myManageHook =
     ]
     <+> FN.floatNextHook
     <+> namedScratchpadManageHook scratchpads
+    <+> shiftToSpawnerWorkspace
   where
     unfloat = ask >>= doF . W.sink
 
@@ -444,7 +459,7 @@ defaults cfg =
       mouseBindings = myMouseBindings,
       layoutHook = myLayout cfg,
       manageHook = myManageHook,
-      startupHook = publishQuickshellWorkspaceState,
+      startupHook = publishQuickshellWorkspaceState <+> publishModalMode,
       handleEventHook = fixSteamFlicker,
-      logHook = workspaceHistoryHook <+> hidePopupsOnFocusChange <+> publishQuickshellWorkspaceState
+      logHook = workspaceHistoryHook <+> hidePopupsOnFocusChange <+> publishQuickshellWorkspaceState <+> publishModalMode
     }
