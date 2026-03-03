@@ -412,7 +412,7 @@ main = do
     . MDL.modal [manipulateFloat, manipulateSubLayout]
     . workspaceNamesEwmh
     . EWMH.ewmhFullscreen
-    . EWMH.ewmh
+    . EWMH.setEwmhActivateHook doAskUrgent . EWMH.ewmh
     . applyRefocusLastHooks
     . withUrgencyHookC BorderUrgencyHook {urgencyBorderColor = cl_alert cfg} urgencyConfig {suppressWhen = Focused}
     . MD.docks
