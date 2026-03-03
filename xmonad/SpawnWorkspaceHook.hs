@@ -2,7 +2,7 @@ module SpawnWorkspaceHook (shiftToSpawnerWorkspace) where
 
 import Control.Exception (IOException, try)
 import Data.Char (isSpace)
-import Data.List (find)
+import Data.List (find, isPrefixOf, stripPrefix)
 import qualified Data.Map.Strict as M
 import Data.Maybe (listToMaybe, mapMaybe)
 import qualified Data.Set as S
@@ -15,12 +15,23 @@ shiftToSpawnerWorkspace :: ManageHook
 shiftToSpawnerWorkspace = do
   w <- ask
   mWs <- liftX $ do
+    workspaceByPid <- buildWorkspaceByPidExcluding w
     mPid <- getWindowPid w
     case mPid of
       Nothing -> return Nothing
       Just pid -> do
-        workspaceByPid <- buildWorkspaceByPid
-        io $ findWorkspaceInAncestry workspaceByPid pid
+        byParent <- io $ do
+          mParentPid <- readParentPid pid
+          case mParentPid of
+            Nothing -> return Nothing
+            Just parentPid -> findWorkspaceInAncestry workspaceByPid parentPid
+        case byParent of
+          Just ws -> return (Just ws)
+          Nothing -> do
+            mSpawnerWindow <- io $ findWindowIdInAncestry pid
+            case mSpawnerWindow of
+              Nothing -> return Nothing
+              Just spawnerWindow -> withWindowSet $ \ws -> return (W.findTag spawnerWindow ws)
   maybe idHook doShift mWs
 
 getWindowPid :: Window -> X (Maybe Int)
@@ -29,13 +40,14 @@ getWindowPid w = do
   prop <- getProp32 pidAtom w
   return $ fromIntegral <$> (prop >>= listToMaybe)
 
-buildWorkspaceByPid :: X (M.Map Int WorkspaceId)
-buildWorkspaceByPid = withWindowSet $ \ws -> do
+buildWorkspaceByPidExcluding :: Window -> X (M.Map Int WorkspaceId)
+buildWorkspaceByPidExcluding excludedWindow = withWindowSet $ \ws -> do
   let workspaceWindows =
         [ (win, W.tag workspace)
           | workspace <- W.workspaces ws,
             W.tag workspace /= "NSP",
-            win <- W.integrate' (W.stack workspace)
+            win <- W.integrate' (W.stack workspace),
+            win /= excludedWindow
         ]
   pidPairs <- mapM windowPidPair workspaceWindows
   return . M.fromList $ mapMaybe id pidPairs
@@ -71,3 +83,40 @@ readParentPid pid = do
     extractPPid statusContent = do
       ppidLine <- find (("PPid:" `elem`) . words . take 5) (lines statusContent)
       readMaybe . dropWhile isSpace . drop (length ("PPid:" :: String)) $ ppidLine
+
+findWindowIdInAncestry :: Int -> IO (Maybe Window)
+findWindowIdInAncestry = go S.empty
+  where
+    go :: S.Set Int -> Int -> IO (Maybe Window)
+    go seen pid
+      | pid <= 1 = return Nothing
+      | S.member pid seen = return Nothing
+      | otherwise = do
+          mWindow <- readWindowIdEnv pid
+          case mWindow of
+            Just windowId -> return (Just windowId)
+            Nothing -> do
+              mParentPid <- readParentPid pid
+              case mParentPid of
+                Nothing -> return Nothing
+                Just parentPid -> go (S.insert pid seen) parentPid
+
+readWindowIdEnv :: Int -> IO (Maybe Window)
+readWindowIdEnv pid = do
+  let environPath = "/proc/" ++ show pid ++ "/environ"
+  environResult <- (try (readFile environPath) :: IO (Either IOException String))
+  return $ either (const Nothing) extractWindowId environResult
+  where
+    extractWindowId :: String -> Maybe Window
+    extractWindowId environContent = do
+      envEntry <- find ("WINDOWID=" `isPrefixOf`) (splitByNull environContent)
+      value <- stripPrefix "WINDOWID=" envEntry
+      fromIntegral <$> (readMaybe value :: Maybe Integer)
+
+splitByNull :: String -> [String]
+splitByNull [] = []
+splitByNull content =
+  let (entry, rest) = break (== '\0') content
+   in case rest of
+        [] -> [entry]
+        (_ : remainder) -> entry : splitByNull remainder
