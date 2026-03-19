@@ -156,6 +156,7 @@ myCmds cfg conf =
     ("notif-close", spawn "qs ipc -c system-popups call notifications dismissLatest"),
     ("notif-close-all", spawn "qs ipc -c system-popups call notifications dismissAll"),
     ("notif-action", spawn "qs ipc -c system-popups call notifications invokeAction"),
+    ("notif-dnd", spawn "qs ipc -c system-popups call notifications toggleDnd"),
     ("clip-to~/img.png", spawn $ cmdMaimSelect "~/img.png"),
     ("clip-to-feh", spawn $ cmdMaimSelect "/dev/stdout" ++ cmdPipeImgToClip ++ "&& xclip -selection clipboard -t image/png -o | feh -"),
     ("clip-to-server", spawn "clipImgToNixPiHttp"),
@@ -211,7 +212,7 @@ brightnessArg Down cfg = hstNmCond cfg (HstNm "" "5%-" "-dec 5%" "")
 brightnessArg FullDown cfg = hstNmCond cfg (HstNm "" "1" "-set 0%" "")
 
 cmdSetVolume :: String -> String
-cmdSetVolume arg = "i3-volume -p -n -P -C -s @DEFAULT_SINK@ " ++ arg
+cmdSetVolume arg = "i3-volume -p -n -P -C " ++ arg
 
 cmdMaimSelect :: String -> String
 cmdMaimSelect out = "maim --select --hidecursor --format png " ++ out
