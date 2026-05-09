@@ -35,4 +35,4 @@ HstNm { hst_hanstop   -- Laptop
 
 ## External Dependencies
 
-Commands used by keybindings: `calc`, `brightnessctl`/`xbacklight`, `i3-volume`, `playerctl`, `maim`, `xclip`, `pass`, `optype`, `qs ipc` (notifications), `setxkbmap`
+Commands used by keybindings: `calc`, `brightnessctl`/`xbacklight`, `volume-fast.sh` (wraps `wpctl`, `canberra-gtk-play`, `qs ipc`), `playerctl`, `maim`, `xclip`, `pass`, `optype`, `qs ipc` (notifications), `setxkbmap`

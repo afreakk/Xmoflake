@@ -7,6 +7,7 @@ import Data.Char (ord)
 import Data.List (elemIndex, nub, sort)
 import qualified Data.Map.Strict as M
 import Data.Maybe (fromMaybe, mapMaybe)
+import Data.Monoid (All (..))
 import Data.Typeable (Typeable)
 import Foreign.C.Types (CChar)
 import ExtraKeyCodes
@@ -43,6 +44,9 @@ import qualified XMonad.Util.ExtensibleState as XS
 import XMonad.Util.NamedScratchpad (NamedScratchpad (..), customFloating, namedScratchpadAction, namedScratchpadManageHook)
 import qualified XMonad.Util.Run as XUR
 
+surfcamRect :: W.RationalRect
+surfcamRect = W.RationalRect 0.68 0.65 0.31 0.34
+
 scratchpads :: [NamedScratchpad]
 scratchpads =
   [ NS "spotify" "spotify" (className =? "Spotify") (customFloating $ W.RationalRect 0.5 0.01 0.5 0.98),
@@ -50,10 +54,33 @@ scratchpads =
     NS "kmag" "kmag" (className =? "kmag") (customFloating $ W.RationalRect 0.05 0.9 0.9 0.1),
     NS "mpv" "mpv" (className =? "mpv") (customFloating $ W.RationalRect 0.25 0.01 0.5 0.4),
     NS "authy" "authy" (className =? "Authy Desktop") (customFloating $ W.RationalRect 0.25 0.01 0.5 0.4),
+    NS "surfcam" surfcamCmd (appName =? "surfcam") (customFloating surfcamRect),
     NS "help" "~/nixos-config/Xmoflake/xmonad/show-keybindings.sh" (className =? "XmonadHelp") (customFloating $ W.RationalRect 0.4 0.05 0.2 0.9)
   ]
   where
-    namedVim = "namedTerminal.sh todo pter $HOME/syncthing/Documents/todo.txt"
+    namedVim = "namedTerminal.sh todo pter $HOME/obsidian/hans/todo.txt"
+    surfcamCmd =
+      "qutebrowser --basedir ~/.local/share/qutebrowser-surfcam "
+        ++ "--qt-arg name surfcam "
+        ++ "'https://www.boresurfsenter.no/en/apps/single/video?content-id=5c6e1e70-4dc4-447f-929b-edd710349319'"
+
+-- After EWMH's fullscreen handler sinks the window on un-fullscreen,
+-- re-float the surfcam scratchpad so it returns to its picture-in-picture rect
+-- instead of getting tiled into the layout.
+surfcamRefloatHook :: Event -> X All
+surfcamRefloatHook ClientMessageEvent {ev_window = w, ev_message_type = mt, ev_data = _ : dats} = do
+  wmstate <- getAtom "_NET_WM_STATE"
+  fsAtom <- getAtom "_NET_WM_STATE_FULLSCREEN"
+  when (mt == wmstate && fromIntegral fsAtom `elem` dats) $ do
+    isSurfcam <- runQuery (appName =? "surfcam") w
+    when isSurfcam $ do
+      isFloating <- gets (M.member w . W.floating . windowset)
+      when (not isFloating) $ windows (W.float w surfcamRect)
+  return (All True)
+surfcamRefloatHook _ = return (All True)
+
+withSurfcamRefloat :: XConfig l -> XConfig l
+withSurfcamRefloat c = c {handleEventHook = handleEventHook c <+> surfcamRefloatHook}
 
 ------------------------------------------------------------------------
 -- Quickshell popup focus tracking
@@ -212,7 +239,7 @@ brightnessArg Down cfg = hstNmCond cfg (HstNm "" "5%-" "-dec 5%" "")
 brightnessArg FullDown cfg = hstNmCond cfg (HstNm "" "1" "-set 0%" "")
 
 cmdSetVolume :: String -> String
-cmdSetVolume arg = "i3-volume -p -n -P -C " ++ arg
+cmdSetVolume arg = "volume-fast.sh " ++ arg
 
 cmdMaimSelect :: String -> String
 cmdMaimSelect out = "maim --select --hidecursor --format png " ++ out
@@ -256,6 +283,22 @@ manipulateFloat =
         ((shiftMask, xK_i), withFocused (keysMoveWindow (20, 0)))
       ]
 
+popupHintsLabel = "PopupHints"
+
+popupHints :: MDL.Mode
+popupHints =
+  MDL.mode popupHintsLabel $ \_ ->
+    M.fromList
+      [ ((0, xK_v), spawn "qs ipc -c system-popups call popups toggle volume" >> MDL.setMode ""),
+        ((0, xK_d), spawn "qs ipc -c system-popups call popups toggle disk" >> MDL.setMode ""),
+        ((0, xK_m), spawn "qs ipc -c system-popups call popups toggle memory" >> MDL.setMode ""),
+        ((0, xK_g), spawn "qs ipc -c system-popups call popups toggle gpu" >> MDL.setMode ""),
+        ((0, xK_c), spawn "qs ipc -c system-popups call popups toggle cpu" >> MDL.setMode ""),
+        ((0, xK_b), spawn "qs ipc -c system-popups call popups toggle battery" >> MDL.setMode ""),
+        ((0, xK_t), spawn "qs ipc -c system-popups call popups toggle calendar" >> MDL.setMode ""),
+        ((0, xK_n), spawn "qs ipc -c system-popups call popups toggle notification" >> MDL.setMode "")
+      ]
+
 manipulateSubLayoutLabel = "ManipulateSubLayout"
 
 manipulateSubLayout :: MDL.Mode
@@ -281,8 +324,8 @@ myKeys :: AConfig -> XConfig Layout -> M.Map (KeyMask, KeySym) (X ())
 myKeys cfg conf@XConfig {XM.modMask = modm} =
   M.fromList $
     [ ((modm .|. shiftMask, xK_Return), spawn $ XM.terminal conf),
-      ((0, xK_XF86AudioRaiseVolume), spawn $ cmdSetVolume "up 1"),
-      ((0, xK_XF86AudioLowerVolume), spawn $ cmdSetVolume "down 1"),
+      ((0, xK_XF86AudioRaiseVolume), spawn $ cmdSetVolume "up"),
+      ((0, xK_XF86AudioLowerVolume), spawn $ cmdSetVolume "down"),
       ((0, 0x1008FF12), spawn $ cmdSetVolume "mute"), -- XF86XK_AudioMute
       ((0, 0x1008FF16), spawn $ "playerctl previous"), -- XF86XK_AudioPrev
       ((0, 0x1008FF17), spawn $ "playerctl next"), -- Next
@@ -310,7 +353,7 @@ myKeys cfg conf@XConfig {XM.modMask = modm} =
       ((modm, xK_c), gsActionRunner (myCmds cfg conf) cfg),
       ((modm, xK_v), MDL.setMode manipulateSubLayoutLabel),
       ((modm, xK_b), spawn "qs ipc -c system-popups call notifications dismissLatest && qs ipc -c system-popups call popups hideAll"),
-      ((modm, xK_j), spawn "~/bin/bar-picker"),
+      ((modm, xK_j), MDL.setMode popupHintsLabel),
       ((modm, xK_y), spawn "~/bin/terminal.sh"),
       ((modm .|. shiftMask, xK_y), FN.toggleFloatAllNew >> FN.runLogHook),
       ((modm, xK_h), sendMessage Shrink),
@@ -331,6 +374,7 @@ myKeys cfg conf@XConfig {XM.modMask = modm} =
       ((modm, xK_m), sendMessage (IncMasterN (-1))),
       ((modm, xK_comma), sendMessage (IncMasterN 1)),
       ((modm, xK_slash), namedScratchpadAction scratchpads "mpv"),
+      ((modm .|. shiftMask, xK_slash), namedScratchpadAction scratchpads "surfcam"),
       ((modm, xK_F1), namedScratchpadAction scratchpads "help"),
       ((modm, xK_Tab), nextWS),
       ((modm .|. shiftMask, xK_Tab), prevWS)
@@ -404,9 +448,10 @@ myMouseBindings XConfig {XM.modMask = modm} =
 myManageHook :: ManageHook
 myManageHook =
   composeAll
-    [ className =? "qutebrowser" --> unfloat,
+    [ (className =? "qutebrowser" <&&> fmap not (appName =? "surfcam")) --> unfloat,
       className =? "TeamViewer" --> unfloat,
       className =? floatingTermClass --> doFloat,
+      className =? "zenity" --> doFloat,
       title =? "quickshell" --> doIgnore,
       className =? "Slack" --> doShift "0",
       className =? "Element" --> doShift "0",
@@ -425,8 +470,9 @@ main :: IO ()
 main = do
   cfg <- getConfig
   xmonad
-    . MDL.modal [manipulateFloat, manipulateSubLayout]
+    . MDL.modal [manipulateFloat, manipulateSubLayout, popupHints]
     . workspaceNamesEwmh
+    . withSurfcamRefloat
     . EWMH.ewmhFullscreen
     . EWMH.setEwmhActivateHook doAskUrgent . EWMH.ewmh
     . applyRefocusLastHooks
