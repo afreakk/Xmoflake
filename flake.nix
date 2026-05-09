@@ -43,7 +43,7 @@
             true;
         }) // {
       overlay = final: prev: {
-        xmoflake = self.packages.${final.system}.default;
+        xmoflake = self.packages.${final.stdenv.hostPlatform.system}.default;
       };
     };
 }

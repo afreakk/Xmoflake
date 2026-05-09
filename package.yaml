@@ -18,6 +18,6 @@ executables:
             - containers
             - X11
             - xmonad
-            - xmonad-contrib == 0.18.1
+            - xmonad-contrib >= 0.18.1
             - utf8-string
             - unix
