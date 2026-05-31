@@ -196,7 +196,8 @@ myCmds cfg conf =
     ("keyboard-layout: norwegian", spawn "setxkbmap no"),
     ("keyboard-layout: us-customzz", spawn "setxkbmap -layout us-customzz"),
     ("barPicker", spawn "bar-picker"),
-    ("toggle-struts", sendMessage MD.ToggleStruts)
+    ("toggle-struts", sendMessage MD.ToggleStruts),
+    ("toggle-bar", spawn "qs ipc -c system-popups call bar toggleVisible")
   ]
 
 optypeCmds :: AConfig -> [([Char], X ())]
