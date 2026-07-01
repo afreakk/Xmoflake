@@ -44,25 +44,34 @@ import qualified XMonad.Util.ExtensibleState as XS
 import XMonad.Util.NamedScratchpad (NamedScratchpad (..), customFloating, namedScratchpadAction, namedScratchpadManageHook)
 import qualified XMonad.Util.Run as XUR
 
+-- matches surfcamCmd's mpv --geometry (1920x1080 bottom-right) on the 5120x2160
+-- display, so the refloat-after-fullscreen lands in the same spot.
 surfcamRect :: W.RationalRect
-surfcamRect = W.RationalRect 0.68 0.65 0.31 0.34
+surfcamRect = W.RationalRect 0.617 0.463 0.375 0.5
 
 scratchpads :: [NamedScratchpad]
 scratchpads =
   [ NS "spotify" "spotify" (className =? "Spotify") (customFloating $ W.RationalRect 0.5 0.01 0.5 0.98),
     NS "todo" namedVim (className =? "todo") (customFloating $ W.RationalRect (1 / 6) (1 / 2) (2 / 5) (1 / 3)),
     NS "kmag" "kmag" (className =? "kmag") (customFloating $ W.RationalRect 0.05 0.9 0.9 0.1),
-    NS "mpv" "mpv" (className =? "mpv") (customFloating $ W.RationalRect 0.25 0.01 0.5 0.4),
+    NS "mpv" "mpv" (className =? "mpv" <&&> fmap not (appName =? "surfcam")) (customFloating $ W.RationalRect 0.25 0.01 0.5 0.4),
     NS "authy" "authy" (className =? "Authy Desktop") (customFloating $ W.RationalRect 0.25 0.01 0.5 0.4),
     NS "surfcam" surfcamCmd (appName =? "surfcam") (customFloating surfcamRect),
     NS "help" "~/nixos-config/Xmoflake/xmonad/show-keybindings.sh" (className =? "XmonadHelp") (customFloating $ W.RationalRect 0.4 0.05 0.2 0.9)
   ]
   where
     namedVim = "namedTerminal.sh todo pter $HOME/obsidian/hans/todo.txt"
+    -- fetches a fresh Mux token and plays the live surf cam in mpv (see
+    -- home/scripts.nix). --x11-name=surfcam sets the WM_CLASS instance so this
+    -- keeps matching (appName =? "surfcam"); className stays "mpv".
+    -- --geometry pins the native 1080p size + position (bottom-right, 40px from
+    -- the right / 80px from the bottom); without it mpv auto-resizes to the video
+    -- resolution on stream start and gets shoved flush into the corner.
+    -- --osd-msg1 shows a centered "Loading" overlay while the core is idle
+    -- (initial buffer / mid-stream rebuffer); it clears once playback starts.
     surfcamCmd =
-      "qutebrowser --basedir ~/.local/share/qutebrowser-surfcam "
-        ++ "--qt-arg name surfcam "
-        ++ "'https://www.boresurfsenter.no/en/apps/single/video?content-id=5c6e1e70-4dc4-447f-929b-edd710349319'"
+      "boresurf-cam -- --x11-name=surfcam --force-window=immediate --geometry=1920x1080-40-80 "
+        ++ "--osd-msg1='${?core-idle==yes:Loading surf cam...}' --osd-align-x=center --osd-align-y=center"
 
 -- After EWMH's fullscreen handler sinks the window on un-fullscreen,
 -- re-float the surfcam scratchpad so it returns to its picture-in-picture rect
@@ -449,7 +458,7 @@ myMouseBindings XConfig {XM.modMask = modm} =
 myManageHook :: ManageHook
 myManageHook =
   composeAll
-    [ (className =? "qutebrowser" <&&> fmap not (appName =? "surfcam")) --> unfloat,
+    [ className =? "qutebrowser" --> unfloat,
       className =? "TeamViewer" --> unfloat,
       className =? floatingTermClass --> doFloat,
       className =? "zenity" --> doFloat,
