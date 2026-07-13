@@ -6,7 +6,7 @@ import Control.Monad (when)
 import Data.Char (ord)
 import Data.List (elemIndex, nub, sort)
 import qualified Data.Map.Strict as M
-import Data.Maybe (fromMaybe, mapMaybe)
+import Data.Maybe (mapMaybe)
 import Data.Monoid (All (..))
 import Data.Typeable (Typeable)
 import Foreign.C.Types (CChar)
@@ -149,10 +149,22 @@ publishQuickshellWorkspaceState = withWindowSet $ \ws -> do
             urgentWins
   setRootCardinals "_XMONAD_QUICKSHELL_URGENT" urgent
 
+-- Label shown in the bar's mode indicator (via _XMONAD_MODAL_MODE) while
+-- FloatNext's "float all new" toggle (mod+shift+y) is active. Unlike the
+-- XMonad.Hooks.Modal modes, this is a persistent background toggle rather than a
+-- keyboard-capturing mode, so it is folded into the same property here instead of
+-- being a real MDL.Mode (which would shadow the normal keymap while active). An
+-- active modal mode takes precedence over this label.
+autoFloatLabel :: String
+autoFloatLabel = "AutoFloat"
+
 publishModalMode :: X ()
 publishModalMode = do
   mMode <- MDL.logMode
-  let modeStr = fromMaybe "" mMode
+  floatAll <- FN.willFloatAllNew
+  let modeStr = case mMode of
+        Just m | not (null m) -> m
+        _ -> if floatAll then autoFloatLabel else ""
   withDisplay $ \dpy -> do
     atom <- getAtom "_XMONAD_MODAL_MODE"
     utf8 <- getAtom "UTF8_STRING"
