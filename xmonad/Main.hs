@@ -482,7 +482,7 @@ myManageHook =
       className =? "Slack" --> doShift "0",
       className =? "Element" --> doShift "0",
       className =? "Signal" --> doShift "0",
-      className =? "Viber" --> doShift "0",
+      className =? "ViberPC" --> doShift "0",
       className =? "Weechat" --> doShift "0",
       className =? "discord" --> doShift "0"
     ]
