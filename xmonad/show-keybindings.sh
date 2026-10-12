@@ -108,6 +108,8 @@ BRIGHTNESS
 SCREENSHOT
 --------------------------------------------------------------------------------
   Print              Screenshot selection to clipboard
+  Mod+Shift+v        Record selection (again: stop, mp4 to clipboard)
+  Mod+Shift+s        Drag window for last recording (Viber)
 
 NOTIFICATIONS
 --------------------------------------------------------------------------------

@@ -26,6 +26,7 @@ import XMonad.Actions.Promote
 import XMonad.Actions.WorkspaceNames
 import qualified XMonad.Hooks.EwmhDesktops as EWMH
 import XMonad.Hooks.FloatConfigureReq (fixSteamFlicker)
+import XMonad.Hooks.ManageHelpers (doCenterFloat)
 import qualified XMonad.Hooks.FloatNext as FN
 import qualified XMonad.Hooks.ManageDocks as MD
 import qualified XMonad.Hooks.Modal as MDL
@@ -357,6 +358,8 @@ myKeys cfg conf@XConfig {XM.modMask = modm} =
       ((0, xK_XF86MonBrightnessUp), spawn $ cmdBrightness cfg Up),
       ((modm, xK_XF86MonBrightnessUp), spawn $ cmdBrightness cfg FullUp),
       ((0, xK_Print), spawn $ cmdMaimSelect "/dev/stdout" ++ cmdPipeImgToClip),
+      ((modm .|. shiftMask, xK_v), spawn "screenrec"),
+      ((modm .|. shiftMask, xK_s), spawn "screenrec-drag"),
       ((modm, xK_grave), gsActionRunner (passCmds cfg) cfg),
       ((modm, xK_q), kill1),
       ((modm, xK_w), spawn "~/bin/runner.sh"),
@@ -474,6 +477,7 @@ myManageHook =
       className =? "TeamViewer" --> unfloat,
       className =? floatingTermClass --> doFloat,
       className =? "zenity" --> doFloat,
+      className =? "ripdrag" --> doCenterFloat,
       title =? "quickshell" --> doIgnore,
       className =? "Slack" --> doShift "0",
       className =? "Element" --> doShift "0",
