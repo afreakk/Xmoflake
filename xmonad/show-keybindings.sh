@@ -21,6 +21,7 @@ WINDOW NAVIGATION
   Mod+u              Focus urgent window
   Mod+f              EasyMotion window select
   Mod+g              Grid select window goto
+  Mod+Shift+g        Grid select Claude Code session
 
 WINDOW MANAGEMENT
 --------------------------------------------------------------------------------

@@ -11,7 +11,7 @@ import Data.Monoid (All (..))
 import Data.Typeable (Typeable)
 import Foreign.C.Types (CChar)
 import ExtraKeyCodes
-import GridSelects (gsActionRunner, gsWindowGoto)
+import GridSelects (gsActionRunner, gsClaudeGoto, gsWindowGoto)
 import LayoutHook (myLayout)
 import PassFork
 import SpawnWorkspaceHook (shiftToSpawnerWorkspace)
@@ -367,6 +367,7 @@ myKeys cfg conf@XConfig {XM.modMask = modm} =
       ((modm .|. shiftMask, xK_f), MDL.setMode manipulateFloatLabel),
       ((modm, xK_p), spawn "clipmenu"),
       ((modm, xK_g), gsWindowGoto cfg),
+      ((modm .|. shiftMask, xK_g), gsClaudeGoto cfg),
       ((modm, xK_a), calculatorPrompt (myXPConfig cfg)),
       ((modm, xK_r), renameWorkspace (myXPConfig cfg)),
       ((modm .|. shiftMask, xK_r), resetWorkspaceNames),

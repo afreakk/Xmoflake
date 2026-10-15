@@ -1,6 +1,8 @@
-module GridSelects ( gsWithWindows, gsWindowGoto, gsActionRunner ) where
+module GridSelects ( gsWithWindows, gsWindowGoto, gsClaudeGoto, gsActionRunner ) where
 
+import Data.List (isPrefixOf)
 import XMonad
+import XMonad.Util.NamedWindows (getName)
 import qualified XMonad.StackSet as W
 import XMonad.Actions.GridSelect
 import AConfig (AConfig (..))
@@ -16,6 +18,16 @@ gsWithWindows extraActions cfg = withFocused $ \w -> do
             | tag <- tags ] )
 
 gsWindowGoto cfg = goToSelected $ (myGsConfigWithDefaultColorizer cfg) {gs_cellwidth = cl_gsCellWidthBig cfg }
+
+-- Like gsWindowGoto, but only Claude Code sessions. Claude titles its
+-- terminal "<status> <topic>" (✳ idle, ◐/◑ working), which tmux passes on
+-- to the alacritty window via set-titles.
+gsClaudeGoto cfg = do
+    wins <- gets (W.allWindows . windowset)
+    named <- mapM (\w -> (\n -> (show n, w)) <$> getName w) wins
+    let claude = filter (\(t, _) -> any (`isPrefixOf` t) ["\x2733 ", "\x25D0 ", "\x25D1 "]) named
+    selected <- gridselect ((myGsConfigWithDefaultColorizer cfg) {gs_cellwidth = cl_gsCellWidthBig cfg}) claude
+    whenJust selected (windows . W.focusWindow)
 
 gsActionRunner actions cfg = do
     runSelectedAction (myGsConfig cfg) actions
